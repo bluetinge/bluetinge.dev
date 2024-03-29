@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Worlds Unknown</title>
+  <style>
+
+    .center {
+        text-align: center;
+        width: 100%;
+        vertical-align: middle;
+        height: 100%;
+        display: table-cell;
+    }
+
+    div,
+    body,
+    html {
+        height: 99%;
+        width: 99%;
+        
+    }
+    body{
+        display: table;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      max-width: 1100px;
+      max-height: 650px;
+      overflow: hidden;
+      
+      animation-timing-function: ease-in-ease-out;
+    }
+    @keyframes expand {
+      from{ max-height: 650px; max-width: 1100px}
+      to{ max=height: 100%; max-width: 100%; }
+    }
+    
+    .wrapper {
+      width: 95%;
+      height: 95%;
+      max-width: 1104px;
+      margin: auto;
+      display: block;
+    }
+    
+  </style>
+</head>
+
+<body bgcolor="#a5c3ce">
+<script>
+  function lowerVolume(music, amount, sec){
+    if(amount!=0){
+      music.volume -= .1;
+      setTimeout(lowerVolume(amount-.1,sec),100*sec);
+    }
+  }
+  
+  function setVolume(music, result){//stupid version
+      music.volume = result;
+  }
+  
+  function resetAll(){
+    document.cookie = "forest=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "desert=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "jungle=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "city=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "level=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    
+    location.reload();
+  }
+ 
+  window.addEventListener('iframe_message', function() {
+      window.open('some url', '_blank')
+      var music = document.getElementById("music");
+      for(var i = 0; i < 20; i++){
+        setTimeout(lowerVolume(music,1-(i*.05)),i*50*4);
+      }
+      
+      var frame = document.getElementById("frame");
+      frame.style.animationName = "expand";
+      frame.style.animationDuration = "6s";
+  }, false);
+
+</script>
+<div class="center">
+  <audio id="music" autoplay loop preload="auto" autobuffer>
+    <source src="music.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+    <div class="wrapper">
+      <iframe id="frame" src="./blackhole.html" scrolling="no" marginheight="1" marginwidth="1">
+        <p>Your browser does not support iframes.</p>
+      </iframe>
+      <p style="text-align:right;font-family:verdana;font-size:10px;"><a onclick="resetAll()" href="javascript:void(0);">[click here to reset]</a></p>
+    </div>
+</div>
+</body>
+</html>

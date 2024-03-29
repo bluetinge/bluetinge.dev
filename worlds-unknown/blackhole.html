@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style> 
+body,
+html {
+    height: 100%;
+    width: 100%; 
+}
+body{
+    display: table;
+}
+p{
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    z-index: 10;
+    text-align: left;
+    text-indent: 40px;
+}
+
+.center {
+    position: relative;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+    text-align: center;
+    width: 100%;
+    vertical-align: middle;
+    height: 100%;
+    display: table-cell;
+    animation-timing-function: ease-in-ease-out;
+    animation-iteration-count: 1;
+    animation-fill-mode:forwards;
+
+    --offset: 0px;
+}
+
+.eyeframe {
+    position: absolute;
+    opacity: 0.75;
+    left: -65%;
+    top: -90%;
+    z-index: -5;
+}
+
+.iris {
+    position: absolute;
+    left: -400px;
+    top: -700px;
+}
+
+.blackhole {
+  
+    animation-name: pulse;
+    transform-origin: 50% 50%;
+    animation-duration: 4s;
+    animation-timing-function: ease-in-ease-out;
+    animation-iteration-count: infinite;
+}
+
+/* Standard syntax */
+@keyframes pulse {
+    0% {transform: scale(.9,.9);}
+    50% {transform: scale(1,1);}
+    100% {transform: scale(.9,.9);}
+}
+
+#infobutton{
+  position: absolute; 
+  left: calc(50% - 120px); top: calc(50% - 140px); 
+  border-radius: 50%;  
+  background-color: transparent;  
+  z-index: 2; 
+  text-align: center;
+  padding: 120px;
+  border: 2px solid transparent;
+}
+
+#infobutton:hover {
+  border: 2px solid #ffffff;
+    z-index: 6; 
+}
+
+#infobox{
+  position: absolute; 
+  left: 15%; top: 25%; right: 15%;
+  border-radius: 4%;  
+  background:rgba(73, 92, 122,0.8);  
+  z-index: 8; 
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #bac9e2;
+  display: none;
+}
+
+.pcontainer {
+    transform-origin: 50% 50%;
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+        animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.particle {
+    z-index: 1;
+    left: 50%; 
+    position: absolute;
+    animation-name: stretch;
+    width: 1%;
+    height: 0%; 
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes stretch {
+    0% {top: -30%; height: 1%;}
+    15% {height: 4%;}
+    50% {top: 30%; height: 40%;}
+    80% {top: 50%; height: 1%;}
+    100% {top: 50%; height: 1%;}
+}
+
+.planet {
+    transform-origin: 0% var(--offset);
+    position: absolute;
+    z-index: 5;
+    top: calc(50% - var(--offset));
+    left: 50%;
+    display: inline;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    border-radius: 50%;  
+    border: 2px solid transparent;
+}
+
+.planet:hover {
+  border: 2px solid #ffffff;
+  z-index: 6; 
+}
+
+@keyframes rotateRight1 {
+  0%{transform:rotate(-140deg);}
+  50%{transform:rotate(40deg);}
+  100%{transform:rotate(220deg);}
+}
+
+@keyframes rotateRight2 {
+  0%{transform:rotate(-270deg);}
+  50%{transform:rotate(-90deg);}
+  100%{transform:rotate(90deg);}
+}
+
+@keyframes rotateRight3 {
+  0%{transform:rotate(0deg);}
+  80%{transform:rotate(360deg);}
+  100%{transform:rotate(360deg);}
+}
+
+@keyframes rotateLeft {
+  100%{transform:rotate(-360deg);}
+}
+
+@keyframes zoomOut {
+  0%{transform: scale(1.1,1.1);}
+  20%{transform: scale(.3,.3);}
+  100%{transform: scale(.25,.25);}
+}
+}
+</style>
+</head>
+
+<script>
+  var level;
+  function zoom(){
+    var d = new Date();
+    d.setTime(d.getTime() + (14*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    var name = "level=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    level = 0;
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf("city=") == 0) {
+            level++;
+        }
+        if (c.indexOf("jungle=") == 0) {
+            level++;
+        }
+        if (c.indexOf("desert=") == 0) {
+            level++;
+        }
+        if (c.indexOf("forest=") == 0) {
+            level++;
+        }
+    }
+    if(level==0){
+      document.cookie = "level=0;"+expires+";path=/";
+      level = 0;
+    }
+    var center = document.getElementById("main");
+    var iris = document.getElementById("iris");
+    var eyeframe = document.getElementById("eyeframe");
+    console.log("Level "+level)
+    switch (level){
+    case (0): 
+      /*center.style.zoom = "230%";
+      center.style.left = "10%";
+      center.style.bottom = "60%";
+      iris.style.left = "-95%"
+      iris.style.top =  "-120%"*/
+      center.style.transform= "scale(2.3,2.3)";
+      break;
+    case (1): 
+      /*center.style.zoom  = "180%";
+      center.style.left = "20%";
+      center.style.bottom = "40%";
+      iris.style.left = "-105%"
+      iris.style.top =  "-120%"*/
+      center.style.transform= "scale(1.8,1.8)";
+      break;
+    case (2): 
+      center.style.zoom  = "100%";
+      break;
+    case (3): 
+      
+      center.style.transform= "scale(.6,.6)";
+      eyeframe.style.left = "-180%";
+      eyeframe.style.top =  "-210%";
+            eyeframe.style.zIndex = 5;
+      <!--center.style.zoom  = "50%"; iris.style.left = "8%" iris.style.top =  "-26%"-->
+      break;
+    case (4): //shit gets real
+      center.style.zoom  = "100%";
+      window.parent.postMessage('iframe_message',"*");
+      center.style.animationName = "zoomOut";
+      center.style.animationDuration = "100s";
+      eyeframe.style.zIndex = 5;
+      eyeframe.style.left = "-180%";
+      eyeframe.style.top =  "-200%";
+      eyeframe.style.opacity = 1;
+      
+      document.cookie = "desert=0;"+expires+";path=/";
+      document.cookie = "forest=0;"+expires+";path=/";
+      document.cookie = "jungle=0;"+expires+";path=/";
+      document.cookie = "city=0;"+expires+";path=/";
+      break;
+    }
+  }
+</script>
+
+<body bgcolor="#FFFFFF" onload="zoom()">
+
+<div id="infobox" onclick="displayInfo('none')"> 
+  <p> Long ago, it may have been a star supporting billions of intelligent life forms, but today the BLACK HOLE is just a swirling vacuity, drawing in dust and debris. Better not get too close. Contact with this thing almost certainly means an eternally early grave.</p>
+  <p>You should try investigating what remains of the ANCIENT HUMAN COLONIES on the planets below. Some of them are moving pretty fast, but you should be able to visit each of the four. You did come all this way, after all.</p>
+  <p>At any rate, it gives you something better to do then staring at the hole. You probably should have stopped earlier, actually, but you can't help it.</p>
+  <p style="text-align: center;">The VOID beckons you.</p></div>
+
+<div class ="center" id="main"> <!-- onclick = "location.href = './planet1.html';"top: 15%; top: -15% ;top: 20%; top: 0%;-->
+
+  <script>
+    function displayInfo(display){ <!--block or none -->
+      if(level == 4) return;
+      var box = document.getElementById('infobox');
+      box.style.display = display;
+      document.getElementById('infobutton').blur();
+    }
+  </script>
+  
+  <img class="eyeframe" id="eyeframe" src="./eyeframe-with-shadow.png">
+  <img class="iris" id="iris" src="./iris.png">
+  <img class="blackhole" src="./blackhole.png" >
+  <div class="pcontainer">
+    <button id="infobutton" onclick="displayInfo('block')" ></button>
+  </div>
+  
+
+  
+  <img class="planet" id="planet1" src="./planet.png" style="--offset: 220px; animation-name: rotateRight1; animation-duration: 300s; " onmousedown="location.href = './planet1.html';">
+  <img class="planet" id="planet2" src="./planet.png" style="--offset: 180px; animation-name: rotateRight2; animation-duration: 60s;" onmousedown="location.href = './planet4.html';">
+  <img class="planet" id="planet3" src="./planettiny.png" style="--offset: 135px; animation-name: rotateRight3; animation-duration: 10s;" onmousedown="location.href = './planet2.html';">
+  <img class="planet" id="planet4" src="./planetbig.png" style="--offset: 500px; animation-name: rotateLeft;animation-duration: 100s;" onmousedown="location.href = './planet3.html';">
+
+  
+  <div class="pcontainer" style="transform: rotate(0deg);"> 
+    <img class="particle" src="./blackhole.png" >
+  </div>
+  <div class="pcontainer" style="transform: rotate(45deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .9s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(60deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.25s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(100deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.5s;">
+  </div>
+   <div class="pcontainer" style="transform: rotate(90deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.1s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(120deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.45s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(170deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.65s;">
+  </div>
+    <div class="pcontainer" style="transform: rotate(200deg);"> 
+    <img class="particle" src="./blackhole.png" >
+  </div>
+  <div class="pcontainer" style="transform: rotate(220deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .7s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(250deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .15s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(255deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.75s;">
+  </div>
+   <div class="pcontainer" style="transform: rotate(285deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.6s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(300deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.05s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(345deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.8s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(355deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .3s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(160deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .4s;">
+  </div>
+</div>
+
+  <script>
+  </script>
+
+</body>
+</html>

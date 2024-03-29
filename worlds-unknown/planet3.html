@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style> 
+body,
+html {
+    height: 100%;
+    width: 100%; 
+}
+body{
+    display: table;
+}
+.center {
+    position: relative;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+    text-align: center;
+    width: 100%;
+    vertical-align: middle;
+    height: 100%;
+    display: table-cell;
+
+}
+
+
+.blackhole {
+    height: 100px;
+    width: 100px; 
+    top: 10px;
+    right:10px;
+    animation-name: pulse;
+    transform-origin: 50% 50%;
+    animation-duration: 4s;
+    animation-timing-function: ease-in-ease-out;
+    animation-iteration-count: infinite;
+}
+
+/* Standard syntax */
+@keyframes pulse {
+    0% {transform: scale(.9,.9);}
+    50% {transform: scale(1,1);}
+    100% {transform: scale(.9,.9);}
+}
+
+.pcontainer {
+    transform-origin: 50% 50%;
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+        animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.particle {
+    z-index: 1;
+    left: 50%; 
+    position: absolute;
+    animation-name: stretch;
+    width: 1%;
+    height: 0%; 
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes stretch {
+    0% {top: -10%; height: 1%;}
+    15% {height: 2%;}
+    50% {top: 30%; height: 40%;}
+    80% {top: 50%; height: 1%;}
+    100% {top: 50%; height: 1%;}
+}
+
+.scene {
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    width: 100%;
+    height: 100%;
+}
+
+.corner {
+    position: absolute;
+    display: inline;
+    text-align: center;
+    vertical-align: middle;
+    display: table-cell;
+    width: 200px
+    height: 200px;
+    right: 0%;
+    top: 0%;
+}
+
+.tablet {
+    position: absolute;
+    left: 500px;
+    bottom: 15px;
+    width: 10%;
+    height: 10%;
+}
+
+.poptablet {
+    display: "none";
+    position: absolute;
+    left: -500%;
+    bottom: -500%;
+}
+
+.back {
+    opacity: 0.7;
+    position: absolute;
+    bottom: 60px;
+    right: 60px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; 
+    border: 2px solid transparent;
+}
+
+.back:hover {  
+    opacity: 1;
+    border: 2px solid #FFFFFF;
+    z-index: 4; 
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<div class ="center">
+
+  <script>
+  function tabletpress(){
+    var tablet = document.getElementById('Tablet');
+    tablet.style.bottom = "0%";
+    tablet.style.left = "0%";
+    tablet.style.width = "100%";
+    tablet.style.height = "100%";
+    
+        var d = new Date();
+    d.setTime(d.getTime() + (14*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    var lname = "level=";
+    var cname = "city=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    var level = 0;
+    var city = 0;
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(lname) == 0) {
+            level = parseInt(c.substring(name.length, c.length),10);
+        }
+        if (c.indexOf(cname) == 0) {
+            city = c.substring(name.length, c.length);
+        }
+    }
+    if(city==0){
+      document.cookie = "city=1;"+expires+";path=/";
+      level++;
+      document.cookie = "level="+level+";"+expires+";path=/";
+    }
+  }
+    function clickaway(){
+        var tablet = document.getElementById('Tablet');
+    tablet.style.bottom = "-1000%";
+    tablet.style.left = "-1000%";
+  }
+  </script>
+    <img class="scene" src="./city.png" style="z-index: -1;">
+    <img class="tablet" src="./journal.png" style="z-index: 1;" onclick="tabletpress()">
+    <img class="poptablet" id="Tablet" src="./note.png" style="z-index: 3;" onclick="clickaway()">
+    <img class="back" src="./back.png" style="z-index: 8;" onclick="location.href = './blackhole.html';">
+
+</div>
+
+</body>
+</html>

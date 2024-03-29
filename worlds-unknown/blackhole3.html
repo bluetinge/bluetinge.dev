@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style> 
+body,
+html {
+    height: 100%;
+    width: 100%; 
+}
+body{
+    display: table;
+}
+.center {
+    position: relative;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+    text-align: center;
+    width: 100%;
+    vertical-align: middle;
+    height: 100%;
+    display: table-cell;
+
+}
+
+.iris {
+    position: absolute;
+    left: -360px;
+    top: -700px;
+}
+
+.blackhole {
+  
+    animation-name: pulse;
+    transform-origin: 50% 50%;
+    animation-duration: 4s;
+    animation-timing-function: ease-in-ease-out;
+    animation-iteration-count: infinite;
+}
+
+/* Standard syntax */
+@keyframes pulse {
+    0% {transform: scale(.9,.9);}
+    50% {transform: scale(1,1);}
+    100% {transform: scale(.9,.9);}
+}
+
+.pcontainer {
+    transform-origin: 50% 50%;
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    display: inline;
+    height: 100%;
+    width: 100%; 
+        animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.particle {
+    z-index: 1;
+    left: 50%; 
+    position: absolute;
+    animation-name: stretch;
+    width: 1%;
+    height: 0%; 
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes stretch {
+    0% {top: -10%; height: 1%;}
+    15% {height: 2%;}
+    50% {top: 30%; height: 40%;}
+    80% {top: 50%; height: 1%;}
+    100% {top: 50%; height: 1%;}
+}
+
+.planet {
+    z-index: 5;
+    top: 15%;
+    left: 50%;
+    position: absolute;
+}
+
+@keyframes rotate1 {
+  100%{transform:rotate(360deg);}
+}
+@keyframes rotate2 {
+  0%{transform:rotate(150deg);}
+  50%{transform:rotate(0deg);}
+  100%{transform:rotate(150deg);}
+}
+@keyframes rotate3 {
+  0%{transform:rotate(-100deg);}
+  100%{transform:rotate(260deg);}
+}
+@keyframes rotate4 {
+  0%{transform:rotate(-280deg);}
+  100%{transform:rotate(80deg);}
+}
+</style>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<div class ="center" onclick = "location.href = './planet3.html';">
+
+  <img class="iris" src="./iris.png">
+  <img class="blackhole" src="./blackhole.png" >
+  
+  <div class="pcontainer" style="animation-name: rotate1;animation-duration: 60s;" onclick="press1();"> 
+    <img class="planet" id="planet1" src="./planet.png" >
+  </div>
+  <div class="pcontainer" style="animation-name: rotate2;animation-duration: 130s;"> 
+    <img class="planet" id="planet2" src="./planetbig.png" style="top: -15%;">
+  </div>
+  <div class="pcontainer" style="animation-name: rotate3;animation-duration: 10s;"> 
+    <img class="planet" id="planet3" src="./planettiny.png" style="top: 20%;">
+  </div>
+  <div class="pcontainer" style="animation-name: rotate4;animation-duration: 100s;"> 
+    <img class="planet" id="planet4" src="./planet.png" style="top: 0%;">
+  </div>
+  
+  <div class="pcontainer" style="transform: rotate(0deg);"> 
+    <img class="particle" src="./blackhole.png" >
+  </div>
+  <div class="pcontainer" style="transform: rotate(45deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .9s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(60deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.25s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(100deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.5s;">
+  </div>
+   <div class="pcontainer" style="transform: rotate(90deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.1s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(120deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.45s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(170deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.65s;">
+  </div>
+    <div class="pcontainer" style="transform: rotate(200deg);"> 
+    <img class="particle" src="./blackhole.png" >
+  </div>
+  <div class="pcontainer" style="transform: rotate(220deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .7s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(250deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .15s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(255deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.75s;">
+  </div>
+   <div class="pcontainer" style="transform: rotate(285deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.6s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(300deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 1.05s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(345deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: 0.8s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(355deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .3s;">
+  </div>
+  <div class="pcontainer" style="transform: rotate(160deg);"> 
+    <img class="particle" src="./blackhole.png" style="animation-delay: .4s;">
+  </div>
+</div>
+
+  <script>
+  function press1() {location.href = './index.html';}
+    function press2() {location.href = './index.html';}
+      function press3() {location.href = './index.html';}
+        function press4() {location.href = './index.html';}
+  document.getElementById("planet1").addEventListener("click", press1);
+    document.getElementById("planet1").addEventListener("click", press2);
+      document.getElementById("planet1").addEventListener("click", press3);
+        document.getElementById("planet1").addEventListener("click", press4);
+  </script>
+
+</body>
+</html>

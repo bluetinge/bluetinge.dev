@@ -4,6 +4,7 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
+    <lastBuildDate>Wed, 11 Sep 2024 21:32:00 GMT</lastBuildDate>
     <item>
     <title>First Post </title>
     <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>

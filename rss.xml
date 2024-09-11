@@ -7,8 +7,11 @@
     <item>
     <title>First Post </title>
     <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>
-    <description><![CDATA[<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!</h2>
-<p>Yaaay</p>]]></description>
+    <description><![CDATA[<body style="background-color:powderblue;">
+<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!!</h2>
+<p>Yaaay</p>
+</body>
+]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.github.io/regex-crossword/</link>
     <guid>https://bluetinge.github.io/regex-crossword/</guid>

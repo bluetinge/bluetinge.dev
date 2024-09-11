@@ -4,12 +4,24 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Wed, 11 Sep 2024 21:32:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 11 Sep 2024 21:33:00 GMT</lastBuildDate>
+    <item>
+    <title>First Post </title>
+    <pubDate>Wed, 11 Sep 2024  21:33:00 GMT</pubDate>
+    <description><![CDATA[<body style="background-color:powderblue;">
+<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!!! (x2)</h2>
+<p>Yaaay (x2) </p>
+</body>
+]]></description>
+    <author>admin@bluetinge.dev (Blue Tinge)</author>
+        <link>https://bluetinge.github.io/regex-crossword/</link>
+    <guid>https://bluetinge.github.io/regex-crossword/</guid>
+    </item>
     <item>
     <title>First Post </title>
     <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>
     <description><![CDATA[<body style="background-color:powderblue;">
-<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!!</h2>
+<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!!!</h2>
 <p>Yaaay</p>
 </body>
 ]]></description>

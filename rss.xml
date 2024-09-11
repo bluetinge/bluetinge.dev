@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel><title>bluetinge.dev</title>
+    <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
+    <link>https://bluetinge.dev</link>
+    <description>bluetinge's RSS feed (test)</description>
+    <item>
+    <title>First Post </title>
+    <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>
+    <description><![CDATA[<h2 id="introducingregexcrossword">Introducing: REGEX Crossword!</h2>
+<p>Yaaay</p>]]></description>
+    <author>admin@bluetinge.dev (Blue Tinge)</author>
+        <link>https://bluetinge.github.io/regex-crossword/</link>
+    <guid>https://bluetinge.github.io/regex-crossword/</guid>
+    </item>
+    </channel>
+    </rss>

@@ -4,12 +4,11 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>>Wed, 11 Sep 2024 23:56:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 11 Sep 2024 8:09 EST</lastBuildDate>
     <item>
     <title>Buttons</title>
-    <pubDate>Wed, 11 Sep 2024 23:56:00 GMT</pubDate>
-    <description><![CDATA[<html>
-<head>
+    <pubDate>Wed, 11 Sep 2024 8:09 EST</pubDate>
+    <description><![CDATA[<head>
 <style>
 .button {
   background-color: #04AA6D; /* Green */
@@ -41,13 +40,13 @@
 
 <p>Use the box-shadow property to add shadows to the button:</p>
 
-<button class="button button1">Shadow Button</button>
-<button class="button button2">Shadow on Hover</button>
+<button class="button button1" style="border-radius: 8px;">Shadow Button</button>
+<button class="button button2" style="border-radius: 8px;">Shadow on Hover</button>
 
 </body>
-</html>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
+    <guid>https://bluetinge.github.io/3</guid>
     </item>
     <item>
     <title>First Post 2</title>
@@ -60,7 +59,7 @@
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.github.io/regex-crossword/</link>
-    <guid>https://bluetinge.github.io/regex-crossword/</guid>
+    <guid>https://bluetinge.github.io/2</guid>
     </item>
     <item>
     <title>First Post </title>

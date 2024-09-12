@@ -4,10 +4,10 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Wed, 11 Sep 2024 08:09:00 EST</lastBuildDate>
+    <lastBuildDate>Thu, 12 Sep 2024 16:10:00 GMT</lastBuildDate>
     <item>
     <title>Buttons</title>
-    <pubDate>Wed, 11 Sep 2024 08:09:00 EST</pubDate>
+    <pubDate>Thu, 12 Sep 2024 16:10:00 GMT</pubDate>
     <description><![CDATA[<head>
 <style>
 .button {
@@ -47,6 +47,7 @@
 </body>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
+    <link>https://bluetinge.dev</link>
     <guid>https://bluetinge.github.io/3</guid>
     </item>
     <item>
@@ -59,7 +60,7 @@
 </body>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
-        <link>https://bluetinge.github.io/regex-crossword/</link>
+        <link>https://bluetinge.github.io/</link>
     <guid>https://bluetinge.github.io/2</guid>
     </item>
     <item>

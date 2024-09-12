@@ -4,7 +4,107 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Thu, 12 Sep 2024 16:10:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 12 Sep 2024 18:00:00 GMT</lastBuildDate>
+
+    <item>
+    <title>Heavy Test</title>
+    <pubDate>Thu, 12 Sep 2024 18:10:00 EST</pubDate>
+    <description><![CDATA[
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<style>
+.button {
+  background-color: #04AA6D; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+}
+
+.button1 {
+  border-radius: 8px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.button2:hover {
+border-radius: 8px;
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+</style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<body>
+
+
+
+<h2>Testing a link with image</h2>
+
+<a href="" target="_blank" rel="noopener noreferrer">
+	<div style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff" >
+     <u><img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"><b>Reblog via RSS</b></u>
+   </div>
+</a>
+
+
+
+
+<h2>Twitter share widget</h2>
+<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<h2>Buttons</h2>
+
+<p>Use the box-shadow property to add shadows to the button:</p>
+
+<button class="button button1" style="border-radius: 8px;">Shadow Button</button>
+<button class="button button2" style="border-radius: 8px;">Shadow on Hover</button>
+<button>Test</button
+
+<h2>Share icon</h2>
+
+<div class="container">
+  <h2>Share Glyph</h2>
+  <p>Share icon: <span class="glyphicon glyphicon-share"></span></p>    
+  <p>Share icon as a link:
+    <a href="#">
+      <span class="glyphicon glyphicon-share"></span>
+    </a>
+  </p>
+  <p>Share icon on a button:
+    <button type="button" class="btn btn-default btn-sm">
+      <span class="glyphicon glyphicon-share"></span> Share
+    </button>
+  </p>
+  <p>Share icon on a styled link button:
+    <a href="#" class="btn btn-info btn-lg">
+      <span class="glyphicon glyphicon-share"></span> Share
+    </a>
+  </p> 
+  <p>Unicode:
+    <span class="glyphicon">&#xe066;</span>
+  </p> 
+</div>
+
+</body>
+</html>
+]]></description>
+    <author>admin@bluetinge.dev (Blue Tinge)</author>
+        <link>https://bluetinge.github.io/regex-crossword/</link>
+    <guid>https://bluetinge.github.io/regex-crossword/4</guid>
+    </item>
+
+
+
     <item>
     <title>Buttons</title>
     <pubDate>Thu, 12 Sep 2024 16:10:00 GMT</pubDate>
@@ -43,6 +143,16 @@
 <button class="button button1" style="border-radius: 8px;">Shadow Button</button>
 <button class="button button2" style="border-radius: 8px;">Shadow on Hover</button>
 <button>Test</button>
+
+<p>Share icon on a styled link button:
+<a href="#" class="btn btn-info btn-lg">
+    <span class="glyphicon glyphicon-share"></span> Share
+</a>
+</p>
+<p>Share on a little button:</p>
+<button type="button" class="btn btn-default btn-sm">
+    <span class="glyphicon glyphicon-share"></span> Share
+</button>
 
 </body>
 ]]></description>

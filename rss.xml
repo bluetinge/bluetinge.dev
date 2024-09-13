@@ -4,67 +4,58 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Fri, 13 Sep 2024 02:09:00 EST</lastBuildDate>
+    <lastBuildDate>Fri, 13 Sep 2024 02:54:00 EST</lastBuildDate>
 
   <item>
-    <title>New share button</title>
-    <pubDate>Fri, 13 Sep 2024 02:09:00 EST</pubDate>
+    <title>New share button 254</title>
+    <pubDate>Fri, 13 Sep 2024 02:54:00 EST</pubDate>
     <description><![CDATA[
+<style>
+
+<!--Stylizing for the RSS Reblog button (only works on some feed readers)-->
 <style>
 .rss-reblog-font {
   font-family:Helvetica,Arial,sans-serif;
   font-size:12px;
+  /*vertical-align:middle; /* Moved to inline*/
 }
 .rss-reblog-button {
-  padding:0.33em;
-  border-radius:0.33em;
+  border-radius:0.36em;
   background-color:#E17831;
   color:#ffffff;
   text-decoration:none;
+  /*padding:0.36em; /* Moved to inline*/
+  /*vertical-align:middle; /* Moved to inline*/
 }
 .rss-reblog-button:hover {
   background-color:#ffba8c;
   color:#ffffff;
 }
 .rss-reblog-profile-img {
-  vertical-align:middle;
-  height:16px
+  /*height:16px /* Moved to inline*/
+  /*padding:0.36em; /* Moved to inline*/
+  /*vertical-align:middle; /* Moved to inline*/
 }
 </style>
 
 <h2>Testing a link with image</h2>
 
-<p> Version without separate style tags -- everything is in the main thing</p>
 
-<p><small style="font-family:Helvetica,Arial,sans-serif;font-size:12px;vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button" style="
-  padding:0.33em;
-  border-radius:0.33em;
-  background-color:#E17831;
-  color:#ffffff;
-  text-decoration:none;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
+<p> To be displayed</p>
 
-<p> The best, and final, version </p>
-
-<p><small class="rss-reblog-font" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
-
+<p><small class="rss-reblog-font" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
 
 <p>The above stripped of classes </p>
 
-<p><small class="" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
+<p><small style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
 
+<p>The above stripped of all classes and style</p>
 
-<p>The above stripped of image height </p>
-
-<p><small class="" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
-
-<p>The above stripped of all style</p>
-
-<p><small class="" style=""><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
-
+<p><small><a href="" target="_blank" rel="noopener noreferrer"><img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.dev/rss</link>
-    <guid>https://bluetinge.github.io/regex-crossword/7</guid>
+    <guid>https://bluetinge.github.io/regex-crossword/8</guid>
 </item>
 
 

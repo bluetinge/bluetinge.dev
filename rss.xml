@@ -4,11 +4,11 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Thu, 12 Sep 2024 23:56:00 EST</lastBuildDate>
+    <lastBuildDate>Thu, 12 Sep 2024 23:57:00 EST</lastBuildDate>
 
   <item>
     <title>New Heavy Test!</title>
-    <pubDate>Thu, 12 Sep 2024 23:56:00 EST</pubDate>
+    <pubDate>Thu, 12 Sep 2024 23:57:00 EST</pubDate>
     <description><![CDATA[
 <head>
 <title>Page Title</title>
@@ -48,13 +48,29 @@ border-radius: 8px;
 
 <h2>Testing a link with image</h2>
 
+<p>-1. what i expect it to look like stripped</p>
+
+<p><small><a href="" target="_blank" rel="noopener noreferrer"><span>
+     <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></span>
+</a>
+</small></p>
+
+<p>0. small with a href inside, with span inside (styled)</p>
+
+<p><small><a href="" target="_blank" rel="noopener noreferrer"><span  style="padding:3px; background-color:#E17831; border-radius:3px; display:inline; color:#ffffff">
+     <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></span>
+</a>
+</small></p>
+
+<p>1. a href with div inside (styled)</p>
+
 <a href="" target="_blank" rel="noopener noreferrer">
 	<div style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff" >
      <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b>
    </div>
 </a>
 
-<p></p>
+<p>2. a href with p inside (styled) </p>
 
 <a href="" target="_blank" rel="noopener noreferrer">
 <p style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff">
@@ -62,22 +78,28 @@ border-radius: 8px;
 </p>
 </a>
 
-<p></p>
+<p>3. p with a href inside (styled)</p>
 
 <p><a href="" target="_blank" rel="noopener noreferrer" style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff">
      <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b>
 </a>
 </p>
 
+<p>4. p with a href inside, with span inside (styled)</p>
+
 <p><a href="" target="_blank" rel="noopener noreferrer"><span  style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff">
      <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></span>
 </a>
 </p>
 
-<p bgcolor="red"><a href="" target="_blank" rel="noopener noreferrer"><span  style="padding:4px;  border-radius:4px; display:inline; color:#ffffff">
+<p>5. table with a inside with span inside (styled)</p>
+
+<table bgcolor="red"><a href="" target="_blank" rel="noopener noreferrer"><span  style="padding:4px;  border-radius:4px; display:inline; color:#ffffff">
      <img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></span>
 </a>
-</p>
+</table>
+
+<p>a href with table inside with tr inside with th inside (styled) </p>
 
 <a href="" target="_blank" rel="noopener noreferrer">
 <table bgcolor="red">
@@ -86,6 +108,7 @@ border-radius: 8px;
   </tr>
 </table>
 </a>
+
 
 <h2> Testing fallback </h2>
 

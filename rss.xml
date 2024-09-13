@@ -4,18 +4,16 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Fri, 13 Sep 2024 12:17:00 EST</lastBuildDate>
+    <lastBuildDate>Fri, 13 Sep 2024 01:17:00 EST</lastBuildDate>
 
   <item>
     <title>New share button</title>
-    <pubDate>Fri, 13 Sep 2024 12:17:00 EST</pubDate>
+    <pubDate>Fri, 13 Sep 2024 01:17:00 EST</pubDate>
     <description><![CDATA[
-<!--Stylizing for the RSS Reblog button (only works on some feed readers)-->
 <style>
 .rss-reblog-font {
   font-family:Helvetica,Arial,sans-serif;
   font-size:12px;
-  vertical-align:middle;
 }
 .rss-reblog-button {
   padding:0.33em;
@@ -28,7 +26,7 @@
   background-color:#ffba8c;
   color:#ffffff;
 }
-.rss-reblog-img {
+.rss-reblog-profile-img {
   vertical-align:middle;
   height:16px
 }
@@ -38,20 +36,21 @@
 
 <p> The best, and final, version </p>
 
-<p><small class="rss-reblog-font"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button"><img class="rss-reblog-img" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
+<p><small class="rss-reblog-font" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
 
 
-<p>The above without style</p>
+<p>The above stripped of classes </p>
 
-<p><small><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button-fake"><img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
+<p><small class="" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
 
-<p>Are font families, image heights, and alignments perserved, at least?
 
-<p><small style="font-family:Helvetica,Arial,sans-serif;vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer"><img style="height:16px;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
+<p>The above stripped of image height </p>
 
-<h2>Twitter share widget</h2>
-<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p><small class="" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
 
+<p>The above stripped of all style</p>
+
+<p><small class="" style=""><a href="" target="_blank" rel="noopener noreferrer" class=""><img style="" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
 
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>

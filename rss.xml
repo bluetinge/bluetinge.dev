@@ -4,11 +4,11 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Thu, 12 Sep 2024 23:33:00 EST</lastBuildDate>
+    <lastBuildDate>Thu, 12 Sep 2024 23:56:00 EST</lastBuildDate>
 
   <item>
-    <title>New Heavy Test</title>
-    <pubDate>Thu, 12 Sep 2024 23:33:00 EST</pubDate>
+    <title>New Heavy Test!</title>
+    <pubDate>Thu, 12 Sep 2024 23:56:00 EST</pubDate>
     <description><![CDATA[
 <head>
 <title>Page Title</title>
@@ -79,6 +79,13 @@ border-radius: 8px;
 </a>
 </p>
 
+<a href="" target="_blank" rel="noopener noreferrer">
+<table bgcolor="red">
+  <tr>
+    <th style="padding:4px; background-color:#E17831; border-radius:4px; display:inline; color:#ffffff"><img src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></th>
+  </tr>
+</table>
+</a>
 
 <h2> Testing fallback </h2>
 
@@ -135,8 +142,8 @@ border-radius: 8px;
 </body>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
-        <link>https://bluetinge.github.io/regex-crossword/</link>
-    <guid>https://bluetinge.github.io/regex-crossword/5</guid>
+        <link>bluetinge.dev/rss</link>
+    <guid>https://bluetinge.github.io/regex-crossword/6</guid>
 </item>
 
 

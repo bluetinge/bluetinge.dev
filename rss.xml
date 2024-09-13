@@ -4,11 +4,11 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Fri, 13 Sep 2024 01:17:00 EST</lastBuildDate>
+    <lastBuildDate>Fri, 13 Sep 2024 02:09:00 EST</lastBuildDate>
 
   <item>
     <title>New share button</title>
-    <pubDate>Fri, 13 Sep 2024 01:17:00 EST</pubDate>
+    <pubDate>Fri, 13 Sep 2024 02:09:00 EST</pubDate>
     <description><![CDATA[
 <style>
 .rss-reblog-font {
@@ -33,6 +33,15 @@
 </style>
 
 <h2>Testing a link with image</h2>
+
+<p> Version without separate style tags -- everything is in the main thing</p>
+
+<p><small style="font-family:Helvetica,Arial,sans-serif;font-size:12px;vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rss-reblog-button" style="
+  padding:0.33em;
+  border-radius:0.33em;
+  background-color:#E17831;
+  color:#ffffff;
+  text-decoration:none;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small><p><script async src="" charset="utf-8"></script>
 
 <p> The best, and final, version </p>
 

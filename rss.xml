@@ -4,12 +4,13 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
-    <lastBuildDate>Sun, 15 Sep 2024 01:21:00 EST</lastBuildDate>
+    <lastBuildDate>Sun, 15 Sep 2024 03:02:00 EST</lastBuildDate>
 
   <item>
     <title>New share button 121</title>
-    <pubDate>Sun, 15 Sep 2024 01:21:00 EST</pubDate>
+    <pubDate>Sun, 15 Sep 2024 02:02:00 EST</pubDate>
     <description><![CDATA[
+
 <!--Stylizing for the RSS Reblog button (only works on some feed readers)-->
 <style>
 .rssr-reblog-font {
@@ -36,25 +37,42 @@
 }
 </style>
 
-<p><small class="rssr-reblog-font" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none;"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i> reblogged a <a href="" target="_blank" rel="noopener noreferrer">post</a> by&nbsp;</i> <a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:2em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OtherReblogger</b></a><i><time class="rssr-date" datetime="2000-01-01 00:00:00 +0000"> on YYYY-MM-DD</time>:</i></small></p>
+<!-- RSS-Reblog Header -->
+
+<p><small class="rssr-reblog-font" class="rssr-reblog-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none;"><img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i> reblogged a <a href="" target="_blank" rel="noopener noreferrer">post</a> by&nbsp; </i> <a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:2em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OtherReblogger</b></a><i><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD:</time></i></small></p>
 
 <hr>
 
-<p><small class="rssr-reblog-font" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OriginalPoster</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">posted</a> on <time class="rssr-date" datetime="2000-01-01 00:00:00 +0000">2000-01-01</time>:</i></small></p>
+<!-- End RSS-Reblog Header -->
+
+<!-- RSS-OP Header -->
+
+<p><small class="rssr-reblog-font" class="rssr-op-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OriginalPoster</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD</time>:</i></small></p>
+
+<!-- End RSS-OP Header -->
 
 <h2>Post title</h2>
 
 <p> Post content </p>
 
+<!-- RSS-Addendum Header -->
+
 <hr>
 
-<p><small class="rssr-reblog-font" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">added</a> on <span class="rssr-date">YYYY-MM-DD</span>:</i></small></p>
+<p><small class="rssr-reblog-font" class="rssr-addendum-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD</time>:</i></small></p>
+
+<!-- End RSS-Addendum Header -->
 
 <p> Additional comments </p>
 
+<!-- RSS-Reblog Footer (Reblog Button) -->
+
 <hr>
 
-<p><small class="rssr-reblog-font" style="vertical-align:middle;"><a href="" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p><script async src="" charset="utf-8"></script>
+<p style=""><small class="arssr-reblog-font" style="vertical-align:middle;text-color:blue;"><a href="" target="_blank" rel="noopener noreferrer" class="arssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p>
+<script async src="" charset="utf-8"></script>
+
+<!-- End RSS-Reblog Footer -->
 
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>

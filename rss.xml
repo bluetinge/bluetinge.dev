@@ -6,9 +6,12 @@
     <description>bluetinge's RSS feed (test)</description>
     <lastBuildDate>Sun, 15 Sep 2024 03:02:00 EST</lastBuildDate>
     <rssr:item>Test</rssr:item>
+    <rssr:itemtwo data="testing" />
 
   <item>
     <title>New share button 121</title>
+    <rssr:itemMeta>Metatest</rssr:itemMeta>
+    <rssr:itemMeta2 data="Metatest" />
     <pubDate>Sun, 15 Sep 2024 02:02:00 EST</pubDate>
     <description><![CDATA[
 

@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" xmlns:rssr="http://purl.org/rssr/" ?>
     <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel><title>bluetinge.dev</title>
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>bluetinge's RSS feed (test)</description>
     <lastBuildDate>Sun, 15 Sep 2024 03:02:00 EST</lastBuildDate>
+    <rssr:item>Test</rssr:item>
 
   <item>
     <title>New share button 121</title>

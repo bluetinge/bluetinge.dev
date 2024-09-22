@@ -14,70 +14,57 @@
     <rssr:itemMeta2 data="Metatest" />
     <pubDate>Sun, 15 Sep 2024 02:02:00 EST</pubDate>
     <description><![CDATA[
-
-<!--Stylizing for the RSS Reblog button (only works on some feed readers)-->
-<style>
-.rssr-reblog-font {
-  font-family:Helvetica,Arial,sans-serif;
-  font-size:12px;
-  /*vertical-align:middle; /* Moved to inline*/
-}
-.rssr-reblog-button {
-  border-radius:0.36em;
-  background-color:#E17831;
-  color:#ffffff;
-  text-decoration:none;
-  /*padding:0.36em; /* Moved to inline*/
-  /*vertical-align:middle; /* Moved to inline*/
-}
-.rssr-reblog-button:hover {
-  background-color:#ffba8c;
-  color:#ffffff;
-}
-.rss-reblog-profile-img {
-  /*height:16px /* Moved to inline*/
-  /*padding:0.36em; /* Moved to inline*/
-  /*vertical-align:middle; /* Moved to inline*/
-}
-</style>
-
 <!-- RSS-Reblog Header -->
-
-<p><small class="rssr-reblog-font" class="rssr-reblog-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none;"><img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i> reblogged a <a href="" target="_blank" rel="noopener noreferrer">post</a> by&nbsp; </i> <a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:2em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OtherReblogger</b></a><i><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD:</time></i></small></p>
-
-<hr>
-
+<div class="rssr-item" id="rssr-item-GUID">
+  <div class="rssr-section rssr-reblog-header">
+    <p><small class="rssr-font rssr-reblog-header-font" style="vertical-align:middle;padding:0.36em;">
+      <a href="https://bluetinge.dev/rss.xml" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <img style="max-height:24px;vertical-align:middle;" src="http://www.google.com/s2/favicons?size=24&domain=https://bluetinge.dev/rss.xml" alt=""> 
+        <b>bluetinge.dev</b>
+      </a> <i> reblogged a <a href="https://bluetinge.dev/rss" target="_blank" rel="noopener noreferrer">post</a> from&nbsp; </i> 
+      <a href="https://bluetinge.dev/" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> 
+        <img style="max-height:2em;vertical-align:middle;" src="http://www.google.com/s2/favicons?size=24&domain=https://www.bluetinge.dev/rss.xml" alt="">
+        <b>bluetinge.dev</b>
+      </a><i><time class="rssr-datetime" datetime="2024-09-22T12:45:34.912Z">on 9/22/2024:</time></i>
+    </small></p>
+  </div>
+  <hr class="rssr-hr rssr-reblog-header-divider">
 <!-- End RSS-Reblog Header -->
 
 <!-- RSS-OP Header -->
-
-<p><small class="rssr-reblog-font" class="rssr-op-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>OriginalPoster</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD</time>:</i></small></p>
-
+  <div class="rssr-section rssr-post-original">
+    <div class="rssr-section-header rssr-op-header">
+      <p><small class="rssr-font rssr-op-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+          <img style="max-height:24px;vertical-align:middle;" src="http://www.google.com/s2/favicons?size=24&domain=https://www.bluetinge.dev/rss.xml" alt="">
+          <b>bluetinge.dev</b>
+        </a><i><a href="https://bluetinge.dev/rss" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="2024-09-15T11:02:00.000Z"> on 9/15/2024</time>:</i>
+      </small></p>
+    </div>
 <!-- End RSS-OP Header -->
-
-<h2>Post title</h2>
-
-<p> Post content </p>
-
+<p>Original Text</p>
 <!-- RSS-Addendum Header -->
-
-<hr>
-
-<p><small class="rssr-reblog-font" class="rssr-addendum-header" style="vertical-align:middle;padding:0.36em;"><a href="" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> <img style="max-height:1.5em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>ThisBlogger</b></a> <i><a href="" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="YYYY-MM-DD HH:MM:SS +HHSS"> on YYYY-MM-DD</time>:</i></small></p>
-
+  </div>
+  <hr class="rssr-hr rssr-hr-mid">
+  <div class="rssr-section rssr-post-addendum">
+    <div class="rssr-section-header rssr-addendum-header">
+      <p><small class="rssr-font rssr-addendum-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/rss.xml" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+        <img style="max-height:24px;vertical-align:middle;" src="http://www.google.com/s2/favicons?size=24&domain=https://bluetinge.dev/rss.xml" alt="">
+        <b>bluetinge.dev</b></a> <i><a href="https://bluetinge.dev/rss" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="2024-09-22T12:45:34.912Z"> on 9/22/2024</time>:</i>
+      </small></p>
+    </div>
 <!-- End RSS-Addendum Header -->
-
-<p> Additional comments </p>
-
+<p>Addendum</p>
 <!-- RSS-Reblog Footer (Reblog Button) -->
-
-<hr>
-
-<p style=""><small class="arssr-reblog-font" style="vertical-align:middle;text-color:blue;"><a href="" target="_blank" rel="noopener noreferrer" class="arssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt="&#128257;"> <b>Reblog via RSS</b></a></small></p>
-<script async src="" charset="utf-8"></script>
-
+  </div>
+  <hr class="rssr-hr rssr-footer-divider">
+  <div class="rssr-section rssr-footer">
+    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://rssr.purl.org/rss-reblog?&feed=destFeed.feedURL(tbd)&guid=destItem.guid(tbd)" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="rssr.purl.org/script"></script>
+  </div>
+</div>
 <!-- End RSS-Reblog Footer -->
-
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.dev/rss</link>

@@ -94,7 +94,7 @@ It's honestly not very complicated, either.</p>
   </div>
   <hr class="rssr-hr rssr-footer-divider">
   <div class="rssr-section rssr-footer">
-    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://rssr.bluetinge.dev/rss-reblog.html?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://rssr.bluetinge.dev/rss-reblog.html?&feed=https%3A%2F%2Fraw.githubusercontent.com%2Fbluetinge%2Fbluetinge.dev%2Frefs%2Fheads%2Fmain%2Frss.xml&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
     <script async src="https://purl.org/rssr/script"></script>
   </div>
 </div>

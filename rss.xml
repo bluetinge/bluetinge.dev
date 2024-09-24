@@ -53,7 +53,7 @@
       <p><small class="rssr-font rssr-addendum-header-font" style="vertical-align:middle;padding:0.36em;">
         <a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
         <img style="max-height:24px;vertical-align:middle;" src="https://staging.cohostcdn.org/avatar/266-1bb8ccae-655b-44b6-830d-3d15e7467a9d-profile.png?dpr=2&width=80&height=80&fit=cover&auto=webp" alt="">
-        <b>eggbugger</b></a> <i><a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer">added</a><i><time class="rssr-datetime" datetime="2024-09-24T07:58:33.888Z">on 9/24/2024:</time></i>
+        <b>eggbugger</b></a> <i><a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer">added</a><i><time class="rssr-datetime" datetime="2024-09-24T07:58:33.888Z"> on 9/24/2024:</time></i>
       </small></p>
     </div>
 <!-- End RSS-Addendum Header -->
@@ -74,7 +74,7 @@
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.dev/blog#firstpost</link>
-    <guid isPermaLink="false">rss-reblog</guid>
+    <guid isPermaLink="false">firstreblog</guid>
     <category>reblog</category><category>egg</category><category>bug</category><category>eggbug</category>
 </item>
 

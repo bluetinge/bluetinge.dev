@@ -4,7 +4,7 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>BlueTinge's RSS feed (test)</description>
-    <lastBuildDate>Tue, 24 Sep 2024 17:14:09 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 24 Sep 2024 18:14:09 GMT</lastBuildDate>
     <rssr:item>Test</rssr:item>
     <rssr:itemtwo data="testing" />
     <item>
@@ -94,7 +94,7 @@ It's honestly not very complicated, either.</p>
   </div>
   <hr class="rssr-hr rssr-footer-divider">
   <div class="rssr-section rssr-footer">
-    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://purl.org/rssr/reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://rssr.bluetinge.dev/rss-reblog.html?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
     <script async src="https://purl.org/rssr/script"></script>
   </div>
 </div>

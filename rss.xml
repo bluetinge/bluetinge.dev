@@ -67,18 +67,28 @@
 <!-- End RSS-Reblog Footer -->
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
-        <link>https://bluetinge.dev/rss</link>
-    <guid>https://bluetinge.github.io/regex-crossword/8</guid>
+        <link>https://rssr.bluetinge.dev/index</link>
+    <guid>rss-reblog</guid>
 </item>
 
 
     <item>
-    <title>Buttons</title>
+    <title>ShadowButtons</title>
     <pubDate>Thu, 12 Sep 2024 16:10:00 GMT</pubDate>
-    <description><![CDATA[
+    <description><![CDATA[<head>
 <div class="rssr-item">
 
-
+<!-- RSS-OP Header -->
+  <div class="rssr-section rssr-post-original">
+    <div class="rssr-section-header rssr-op-header">
+      <p><small class="rssr-font rssr-op-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+          <img style="max-height:24px;vertical-align:middle;" src="https://www.bluetinge.dev/favicon.png" alt="">
+          <b>BlueTinge</b>
+        </a><i><a href="https://bluetinge.dev/blog#shadowbuttons" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="2024-09-12 10:14:00 +0000"> on 2024-09-12</time>:</i>
+      </small></p>
+    </div>
+<!-- End RSS-OP Header -->
 
 <style>
 .button {
@@ -104,7 +114,8 @@
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
 </style>
-
+</head>
+<body>
 
 <h2>Shadow Buttons</h2>
 
@@ -124,20 +135,28 @@
     <span class="glyphicon glyphicon-share"></span> Share
 </button>
 
+<!-- RSS-Reblog Footer (Reblog Button) -->
+  </div>
+  <hr class="rssr-hr rssr-footer-divider">
+  <div class="rssr-section rssr-footer">
+    <p><small class="rssr-font rssr-footer-font" style="vertical-align:middle;text-color:blue;"><a href="https://rssr.bluetinge.dev/rss-reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=shadowbuttons&link=https%3A%2F%2Fbluetinge.dev%2Fblog%23firstpost&name=BlueTinge&icon=https%3A%2F%2Fwww.bluetinge.dev%2Ffavicon.png" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="" charset="utf-8"></script>
+  </div>
 </div>
-
+<!-- End RSS-Reblog Footer -->
+</body>
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
-    <link>https://bluetinge.dev</link>
-    <guid>https://bluetinge.github.io/3</guid>
+    <link>https://bluetinge.dev/blog#shadowbuttons</link>
+    <guid>shadowbuttons</guid>
     </item>
     <item>
     <title>First Post 2</title>
     <pubDate>Wed, 11 Sep 2024 21:35:00 GMT</pubDate>
     <description><![CDATA[
     
-<div class="rssr-item">
 
+<div class="rssr-item">
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">
     <div class="rssr-section-header rssr-op-header">
@@ -163,6 +182,7 @@
 </div>
 <!-- End RSS-Reblog Footer -->
 
+
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>
         <link>https://bluetinge.github.io/regex-crossword/</link>
@@ -176,7 +196,6 @@
     <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>
     <description><![CDATA[
 <div class="rssr-item">
-
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">
     <div class="rssr-section-header rssr-op-header">
@@ -200,6 +219,8 @@
   </div>
 </div>
 <!-- End RSS-Reblog Footer -->
+
+
 
 ]]></description>
     <author>admin@bluetinge.dev (Blue Tinge)</author>

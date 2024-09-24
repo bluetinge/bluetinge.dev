@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="http://purl.org/rssr/">
+    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="https://purl.org/rssr/terms">
     <channel><title>bluetinge.dev</title>
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
@@ -94,8 +94,8 @@ It's honestly not very complicated, either.</p>
   </div>
   <hr class="rssr-hr rssr-footer-divider">
   <div class="rssr-section rssr-footer">
-    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="purl.org/rssr/reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Fblog%2Frss.xml&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
-    <script async src="rssr.purl.org/script"></script>
+    <p style=""><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://purl.org/rssr/reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F&link=https%3A%2F%2Fchaiaeran.github.io%2FRuSShdown%2F" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://www.rssboard.org/images/rss-icon.png" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="https://purl.org/rssr/script"></script>
   </div>
 </div>
 <!-- End RSS-Reblog Footer -->

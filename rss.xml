@@ -4,9 +4,9 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev</link>
     <description>BlueTinge's RSS feed (test)</description>
-    <lastBuildDate>Wed, 25 Sep 2024 18:15:09 GMT</lastBuildDate>
-    <rssr:item>Test</rssr:item>
-    <rssr:itemtwo data="testing" />
+    <lastBuildDate>Wed, 25 Sep 2024 18:15:10 GMT</lastBuildDate>
+    <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">BlueTinge</rssr:displayName>
+    <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">https://bluetinge.dev/favicon.png</rssr:displayIcon>
     <item>
       <author>
         chaia.eran@protonmail.com (Chaia Eran)
@@ -27,11 +27,11 @@
   <div class="rssr-section rssr-reblog-header">
     <p><small class="rssr-font rssr-reblog-header-font" style="vertical-align:middle;padding:0.36em;">
       <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
-        <img style="max-height:24px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt=""> 
+        <img style="max-height:24px;max-width:24px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt=""> 
         <b>BlueTinge</b>
       </a> <i> reblogged a <a href="https://chaiaeran.github.io/RuSShdown/" target="_blank" rel="noopener noreferrer">post</a> from&nbsp; </i> 
       <a href="https://chaiaeran.neocities.org/" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> 
-        <img style="max-height:2em;vertical-align:middle;" src="https://www.google.com/s2/favicons?size=24&domain=https://chaiaeran.neocities.org/rss.xml" alt="">
+        <img style="max-height:24px;max-width:24px;vertical-align:middle;" src="https://www.google.com/s2/favicons?size=24&domain=https://chaiaeran.neocities.org/rss.xml" alt="">
         <b>Chaia's Cool RSS Feed</b>
       </a><i><time class="rssr-datetime" datetime="2024-09-24T15:14:09.937Z">on 9/24/2024:</time></i>
     </small></p>
@@ -124,7 +124,7 @@ It's honestly not very complicated, either.</p>
         <b>BlueTinge</b>
       </a> <i> reblogged a <a href="https://bluetinge.dev/blog#firstpost" target="_blank" rel="noopener noreferrer">post</a> from&nbsp; </i> 
       <a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer" style="text-decoration:none"> 
-        <img style="max-height:2em;vertical-align:middle;" src="https://staging.cohostcdn.org/avatar/266-1bb8ccae-655b-44b6-830d-3d15e7467a9d-profile.png?dpr=2&width=80&height=80&fit=cover&auto=webp" alt="">
+        <img style="style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://staging.cohostcdn.org/avatar/266-1bb8ccae-655b-44b6-830d-3d15e7467a9d-profile.png?dpr=2&width=80&height=80&fit=cover&auto=webp" alt="">
         <b>eggbugger</b>
       </a><i><time class="rssr-datetime" datetime="2024-09-24T07:58:33.888Z">on 9/24/2024:</time></i>
     </small></p>
@@ -153,7 +153,7 @@ It's honestly not very complicated, either.</p>
     <div class="rssr-section-header rssr-addendum-header">
       <p><small class="rssr-font rssr-addendum-header-font" style="vertical-align:middle;padding:0.36em;">
         <a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
-        <img style="max-height:24px;height:22px;width:22px;vertical-align:middle;" src="https://staging.cohostcdn.org/avatar/266-1bb8ccae-655b-44b6-830d-3d15e7467a9d-profile.png?dpr=2&width=80&height=80&fit=cover&auto=webp" alt="">
+        <img style="style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://staging.cohostcdn.org/avatar/266-1bb8ccae-655b-44b6-830d-3d15e7467a9d-profile.png?dpr=2&width=80&height=80&fit=cover&auto=webp" alt="">
         <b>eggbugger</b></a> <i><a href="https://cohost.org/eggbug" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="2024-09-24T07:58:33.888Z"> on 9/24/2024:</time></i>
       </small></p>
     </div>

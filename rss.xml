@@ -11,7 +11,7 @@
       BlueTinge's RSS feed
     </description>
     <lastBuildDate>
-      Fri, 27 Sep 2024 19:15:00 GMT
+      Fri, 27 Sep 2024 19:26:00 GMT
     </lastBuildDate>
     <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">
       BlueTinge
@@ -48,7 +48,7 @@
     </div>
 <!-- End RSS-OP Header -->
 
-<h4 id="can-we-recreate-cohost-in-a-decentralized-environment">Can we recreate Cohost in a decentralized environment?</h4>
+<h4 id="introducing_a_reblog_button_for_your_rss_feeds">Can we recreate Cohost in a decentralized environment?</h4>
 <p>It's been great to see so many people planning to keep the Cohost community alive by sharing links to their own blogs following one another through RSS. In theory, something like Cohost should be entirely possible to recreate through decentralized networks &mdash; even as we move to different blogging platforms or create our own websites, we can use RSS to follow one another and stay in touch. The barrier of entry is incredibly low: platforms like WordPress and Tumblr already offer RSS feeds, and tools like the excellent <a href="https://chaiaeran.github.io/RuSShdown/">RuSSHDown</a> even let you create an RSS feed all on their own!</p>
 <p>But there's still something missing… Or, well, there's plenty missing, but one thing in particular stuck out to me: <strong>reblogging</strong>. Sharing and reblogging content is a <em>huge</em> part of any Cohost-like system… is it possible to recreate it without relying on a centralized server?</p>
 <p><img src="https://rssr.bluetinge.dev/images/form.gif" alt="Gif of scrolling and hitting reblog button" /><br />
@@ -236,7 +236,7 @@ It's honestly not very complicated, either.</p>
       <description>
         <![CDATA[
 <!-- RSS-Reblog Header -->
-<div class="">
+<div class="rssr-item">
   <div class="rssr-section rssr-reblog-header">
     <p><small class="rssr-font rssr-reblog-header-font" style="vertical-align:middle;padding:0.36em;">
       <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">

@@ -134,7 +134,7 @@ It's honestly not very complicated, either.</p>
       <description>
         <![CDATA[
 <!-- RSS-Reblog Header -->
-<div class="rssr-item">
+<div class="">
   <div class="rssr-section rssr-reblog-header">
     <p><small class="rssr-font rssr-reblog-header-font" style="vertical-align:middle;padding:0.36em;">
       <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
@@ -223,7 +223,7 @@ It's honestly not very complicated, either.</p>
       </pubDate>
       <description>
         <![CDATA[
-<div class="rssr-item">
+<div class="">
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">
     <div class="rssr-section-header rssr-op-header">
@@ -277,8 +277,7 @@ It's honestly not very complicated, either.</p>
       </link>
       <description>
         <![CDATA[
-
-<div id="rssr-item">
+<div class="rssr-item">
 
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">

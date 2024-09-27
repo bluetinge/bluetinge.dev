@@ -4,7 +4,7 @@
     <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
     <link>https://bluetinge.dev/blog</link>
     <description>BlueTinge's RSS feed (test)</description>
-    <lastBuildDate>Fri, 27 Sep 2024 16:36:10 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 27 Sep 2024 16:42:10 GMT</lastBuildDate>
     <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">BlueTinge</rssr:displayName>
     <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">https://bluetinge.dev/favicon.png</rssr:displayIcon>
     <item>

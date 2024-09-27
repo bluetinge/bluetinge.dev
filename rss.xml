@@ -11,7 +11,7 @@
       BlueTinge's RSS feed
     </description>
     <lastBuildDate>
-      Fri, 27 Sep 2024 18:57:59 GMT
+      Fri, 27 Sep 2024 18:29:59 GMT
     </lastBuildDate>
     <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">
       BlueTinge
@@ -277,8 +277,9 @@ It's honestly not very complicated, either.</p>
       </link>
       <description>
         <![CDATA[
-<div class="card">
-        
+
+<div id="rssr-item">
+
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">
     <div class="rssr-section-header rssr-op-header">
@@ -290,22 +291,6 @@ It's honestly not very complicated, either.</p>
       </small></p>
     </div>
 <!-- End RSS-OP Header -->
-
-
-    <h4>First post!!</h4>
-
-
-  </div>
-<hr class="rssr-hr rssr-hr-mid">
-  <div class="rssr-section rssr-post-addendum">
-    <div class="rssr-section-header rssr-addendum-header">
-      <p><small class="rssr-font rssr-addendum-header-font" style="vertical-align:middle;padding:0.36em;">
-        <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
-        <img style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt="">
-        <b>BlueTinge</b></a> <i><a href="https://bluetinge.dev/blog#introducing_a_reblog_button_for_your_rss_feeds" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="2024-09-27T18:29:59.380Z"> on 9/27/2024</time>:</i>
-      </small></p>
-    </div>
-<!-- End RSS-Addendum Header -->
 
 <h4 id="can-we-recreate-cohost-in-a-decentralized-environment">Can we recreate Cohost in a decentralized environment?</h4>
 <p>It's been great to see so many people planning to keep the Cohost community alive by sharing links to their own blogs following one another through RSS. In theory, something like Cohost should be entirely possible to recreate through decentralized networks &mdash; even as we move to different blogging platforms or create our own websites, we can use RSS to follow one another and stay in touch. The barrier of entry is incredibly low: platforms like WordPress and Tumblr already offer RSS feeds, and tools like the excellent <a href="https://chaiaeran.github.io/RuSShdown/">RuSSHDown</a> even let you create an RSS feed all on their own!</p>

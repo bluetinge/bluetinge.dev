@@ -1,12 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="https://purl.org/rssr/terms">
-    <channel><title>bluetinge.dev</title>
-    <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml" />
-    <link>https://bluetinge.dev/blog</link>
-    <description>BlueTinge's RSS feed (test)</description>
-    <lastBuildDate>Fri, 27 Sep 2024 16:42:10 GMT</lastBuildDate>
-    <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">BlueTinge</rssr:displayName>
-    <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">https://bluetinge.dev/favicon.png</rssr:displayIcon>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="https://purl.org/rssr/terms" version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>
+      bluetinge.dev
+    </title>
+    <atom:link href="https://bluetinge.dev/rss.xml" rel="self" type="application/rss+xml"/>
+    <link>
+      https://bluetinge.dev/blog
+    </link>
+    <description>
+      BlueTinge's RSS feed
+    </description>
+    <lastBuildDate>
+      Fri, 27 Sep 2024 18:29:59 GMT
+    </lastBuildDate>
+    <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">
+      BlueTinge
+    </rssr:displayName>
+    <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">
+      https://bluetinge.dev/favicon.png
+    </rssr:displayIcon>
     <item>
       <author>
         chaia.eran@protonmail.com (Chaia Eran)
@@ -108,13 +120,19 @@ It's honestly not very complicated, either.</p>
         Tue, 24 Sep 2024 15:14:09 GMT
       </pubDate>
     </item>
-
-  <item>
-    <title>First Reblog</title>
-    <rssr:itemMeta>Metatest</rssr:itemMeta>
-    <rssr:itemMeta2 data="Metatest" />
-    <pubDate>Tue, 24 Sep 2024 07:58:33 GMT</pubDate>
-    <description><![CDATA[
+    <item>
+      <title>
+        First Reblog
+      </title>
+      <rssr:itemMeta>
+        Metatest
+      </rssr:itemMeta>
+      <rssr:itemMeta2 data="Metatest"/>
+      <pubDate>
+        Tue, 24 Sep 2024 07:58:33 GMT
+      </pubDate>
+      <description>
+        <![CDATA[
 <!-- RSS-Reblog Header -->
 <div class="rssr-item">
   <div class="rssr-section rssr-reblog-header">
@@ -172,19 +190,39 @@ It's honestly not very complicated, either.</p>
   </div>
 </div>
 <!-- End RSS-Reblog Footer -->
-]]></description>
-    <author>admin@bluetinge.dev (Blue Tinge)</author>
-        <link>https://bluetinge.dev/blog#firstpost</link>
-    <guid isPermaLink="false">firstreblog</guid>
-    <category>reblog</category><category>egg</category><category>bug</category><category>eggbug</category>
-</item>
-    
-    
-    
-<item>
-    <title>First Post</title>
-    <pubDate>Wed, 11 Sep 2024 18:14:00 GMT</pubDate>
-    <description><![CDATA[
+]]>
+      </description>
+      <author>
+        admin@bluetinge.dev (Blue Tinge)
+      </author>
+      <link>
+        https://bluetinge.dev/blog#firstpost
+      </link>
+      <guid isPermaLink="false">
+        firstreblog
+      </guid>
+      <category>
+        reblog
+      </category>
+      <category>
+        egg
+      </category>
+      <category>
+        bug
+      </category>
+      <category>
+        eggbug
+      </category>
+    </item>
+    <item>
+      <title>
+        First Post
+      </title>
+      <pubDate>
+        Wed, 11 Sep 2024 18:14:00 GMT
+      </pubDate>
+      <description>
+        <![CDATA[
 <div class="rssr-item">
 <!-- RSS-OP Header -->
   <div class="rssr-section rssr-post-original">
@@ -212,12 +250,134 @@ It's honestly not very complicated, either.</p>
 
 
 
-]]></description>
-    <author>admin@bluetinge.dev (Blue Tinge)</author>
-        <link>https://bluetinge.dev/blog#firstpost</link>
-    <guid isPermaLink="false">firstpost</guid>
+]]>
+      </description>
+      <author>
+        admin@bluetinge.dev (Blue Tinge)
+      </author>
+      <link>
+        https://bluetinge.dev/blog#firstpost
+      </link>
+      <guid isPermaLink="false">
+        firstpost
+      </guid>
     </item>
-    </channel>
-    </rss>
-    
-    
+    <item>
+      <author>
+        admin@bluetinge.dev (Blue Tinge)
+      </author>
+      <title>
+        Introducting: a Reblog button for your RSS Feeds
+      </title>
+      <guid isPermaLink="true">
+        https://bluetinge.dev/blog#introducing_a_reblog_button_for_your_rss_feeds
+      </guid>
+      <link>
+        https://bluetinge.dev/blog#introducing_a_reblog_button_for_your_rss_feeds
+      </link>
+      <description>
+        <![CDATA[
+
+<!-- RSS-OP Header -->
+  <div class="rssr-section rssr-post-original">
+    <div class="rssr-section-header rssr-op-header">
+      <p><small class="rssr-font rssr-op-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+          <img style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt="">
+          <b>BlueTinge</b>
+        </a><i><a href="https://bluetinge.dev/blog#introducing_a_reblog_button_for_your_rss_feeds" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="2024-09-27T18:29:59.380Z"> on 9/27/2024</time>:</i>
+      </small></p>
+    </div>
+<!-- End RSS-OP Header -->
+
+
+    <h4>First post!!</h4>
+
+
+  </div>
+<hr class="rssr-hr rssr-hr-mid">
+  <div class="rssr-section rssr-post-addendum">
+    <div class="rssr-section-header rssr-addendum-header">
+      <p><small class="rssr-font rssr-addendum-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+        <img style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt="">
+        <b>BlueTinge</b></a> <i><a href="https://bluetinge.dev/blog#introducing_a_reblog_button_for_your_rss_feeds" target="_blank" rel="noopener noreferrer">added</a><time class="rssr-datetime" datetime="2024-09-27T18:29:59.380Z"> on 9/27/2024</time>:</i>
+      </small></p>
+    </div>
+<!-- End RSS-Addendum Header -->
+
+<h4 id="can-we-recreate-cohost-in-a-decentralized-environment">Can we recreate Cohost in a decentralized environment?</h4>
+<p>It's been great to see so many people planning to keep the Cohost community alive by sharing links to their own blogs following one another through RSS. In theory, something like Cohost should be entirely possible to recreate through decentralized networks &mdash; even as we move to different blogging platforms or create our own websites, we can use RSS to follow one another and stay in touch. The barrier of entry is incredibly low: platforms like WordPress and Tumblr already offer RSS feeds, and tools like the excellent <a href="https://chaiaeran.github.io/RuSShdown/">RuSSHDown</a> even let you create an RSS feed all on their own!</p>
+<p>But there's still something missing… Or, well, there's plenty missing, but one thing in particular stuck out to me: <strong>reblogging</strong>. Sharing and reblogging content is a <em>huge</em> part of any Cohost-like system… is it possible to recreate it without relying on a centralized server?</p>
+<p><img src="https://rssr.bluetinge.dev/images/form.gif" alt="Gif of scrolling and hitting reblog button" /><br />
+<figcaption>Note: the default styling is a bit basic but it's all easily customizable!</figcaption></p>
+<p><strong>The above is a reblog button that I've created that's intended to work on as many different systems and platforms as possible.</strong> I have a widget for creating one on the main page at <a href="rssr.bluetinge.dev">rssr.bluetinge.dev</a>, which doubles as a tool to reblog any RSS feed on the internet, and a sample page of what the results could look like <a href="https://www.bluetinge.dev/blog">here</a>, but if you don't mind, I'd like to explain a bit about how it works first and make a case for why people should give it a try! <span style="background: #FFFFC5; color:black;">And if you don't have an RSS feed or blog yet, scroll to the bottom where I have a tutorial on how to get started!&nbsp;</span></p>
+<hr />
+<h3 id="okay-so-what-is-this-thing">Okay, so, what is this thing?</h3>
+<p><strong>RSS-Reblog</strong>&mdash; as I'm currently calling it, though admittedly it would be nice to have a catchier name &mdash; is basically just a link that you can embed at the bottom of your posts to let people reblog it (whether to another platform or your personal website of choice). You use <a href="https://rssr.bluetinge.dev">rssr.bluetinge.dev</a> to generate the link/button for your posts, or even to reblog other people's posts who don't have the link. (It keeps the original author data and links back to their original post and feed).</p>
+<p>When you reblog a post &mdash; whether that's from the above webpage or by clicking on the reblog button &mdash; it brings you to the webpage below where you provide your own RSS feed, adjust how your display name and icon are presented, and (<em>optionally</em>) add your own text (in HTML or markdown), adjust tags (the reblog tag is provided automatically), and/or provide a link you want associated with the post:</p>
+<p><img src="https://rssr.bluetinge.dev/images/basic.gif" alt="Gif of generating the reblog" /></p>
+<p>Once you hit generate, you're able to view a preview of the post. As we can see here, it's added a couple headers around the original post (replacing any pre-existing headers it's able to find), and same with a footer with a new Reblog button. Here, <strong>you have some options for what to do next depending on your personal preference.</strong></p>
+<ol>
+<li><p><strong>If you maintain your blog purely through your RSS feed</strong> &mdash; maybe you use <a href="https://chaiaeran.github.io/RuSShdown/">RuSSHDown</a> to make new posts, and use <a href="https://rss.bloople.net/">RSS2HTML</a> to generate your blog webpage (if you even decide to have one!), then all you need to do next is download the new rss.xml with the new post item added to it. If you want to double-check the results or make any edits, you can take a look at the generated RSS file instead, and copy it to the clipboard when you're done. And if you're reblogging several posts at once, <strong>you can always save the file to local storage to reuse, so that you only need to download it once at the end</strong> (<em>this feature should be live in a couple hours &mdash; I'll edit this post when it is</em>). </p></li>
+<li><p><strong>Already have your own blog site?</strong> No problem! For example, maybe you have a Neocities site where you have a blog you've worked super hard on to get custom styling you like. All you need to do is copy the newly generated HTML or markdown and put it as a new post in your blog, making any edits you'd like to make first. <strong>If you don't autogenerate your RSS feed,</strong> you should download the rss.xml as well, since <strong>the reblog button doesn't work unless it can find the post to be reblogged on your feed</strong>. You can always host this file as a separate rss feed specifically for reblogging posts, if you're nervous about overwriting the old one with something autogenerated or just want to keep things separate. <strong>If you do autogenerate your feed</strong>, well, see #3 below.</p></li>
+<li><p><strong>Host your blog on WordPress, Tumblr, etc. and use that to generate your RSS feed?</strong> That's totally fine! In this case, you can just copy the markdown or HTML to make a new post, same as you would make any other post, and presto! There is one caveat &mdash; the reblog button at the bottom of your new post only works if you either <strong>A. Provide a link to your reblog of the new post now</strong>, which might not always be possible if the new link is autogenerated, or B. <strong>Download and host this rss.xml separately from your main one</strong>. In other words, you'll keep using your main, autogenerated RSS feed for everything else &mdash; it's the canonical feed that you give people to follow you, etc. &mdash; but for the reblog button specifically, it will find your posts from this separate feed in order to make sure the reblog button always works. (Hosting it is free and super simple &mdash; see how-to-get-started below).</p></li>
+</ol>
+<p>I'll add that if you don't like the default style of what's been generated &mdash; the button, the colors, the fonts, whatever &mdash; the generated HTML has CSS classes you can use to format it to your heart's content! Keep in mind that feed readers will strip a lot of custom styling, so the generated code includes some basic inline styles to fall back on. See a guide to using the CSS hooks <a href="https://github.com/bluetinge/rss-reblog/tree/main#css-hooks">here</a>.</p>
+<h4 id="cool-but-is-it-secure-private-does-it-have-bugs-thatll-mess-up-my-feed-let-me-see-the-source">Cool, but is it secure? Private? Does it have bugs that'll mess up my feed? Let me see the source!</h4>
+<p><strong>Security:</strong> Since you're loading HTML from other users, by default it filters out dangerous elements such as scripts. It filters style blocks too &mdash; these can be disruptive if they redefine CSS classes you use elsewhere &mdash; though it keeps most inline CSS style options. You have the option to adjust this when reblogging &mdash; from disallowing all styles, to allowing style blocks, to fully allowing all scripts. It should be noted though that nothing is 100% secure, and if as a website owner you are hosting other people's content then you should double check the HTML for anything suspicious! I'm not a security expert or anything, so I use an <a href="https://github.com/leizongmin/js-xss">existing library</a> for this: let me know if you <em>are</em> an expert and have concerns!</p>
+<p><strong>Privacy:</strong> there's no cookies and it's all client-side! …Or at least, in theory. In practice, you can't actually access other people's RSS feeds to reblog them purely through client-side javascript (<a href="https://stackoverflow.com/questions/73817287/browser-same-origin-policy-why-is-rss-data-considered-dangerous">due to CORS</a>), so I built a very simple proxy server to get around this &mdash; basically, it retrieves other people's RSS feeds and sends them to your browser. I do keep a log file on this server &mdash; mostly for debugging purposes, but also to see if people start actually using this thing &mdash; and if my server ever goes down, it uses the <a href="https://rss2json.com/">RSS2JSON</a> service as a backup. If you'd like to avoid that though, hey, you can always just fork my repository and stick the relevant script files on your website somewhere! CORS protection only comes in to play when you need to access other people's RSS feeds &mdash; if you host the script yourself, on the same domain as your RSS feed, people should be able to reblog your posts without relying on any servers. I do ask that you sync your script when I make updates, though!</p>
+<p><strong>Bugs</strong>: There will be bugs! The main system seems to be working pretty well, and I'm careful to avoid e.g. deleting anything in the RSS files you upload. It's never a bad idea to keep backups, though! And with regards to less damaging bugs, well, let me know if you encounter any issues. I still have several planned updates and such that'll hopefully help it all work better, and if people end up using this then I would like to keep it maintained for a long time!</p>
+<p>The project is open-source: see my repository <a href="https://github.com/bluetinge/rss-reblog">here</a>. But, uh, I may have written this whole thing in a frantic rush to make something at least nominally feature-complete before Cohost shuts down, so I do need to do some refactoring to make it more readable. </p>
+<h4 id="okay-but-what-how-do-i-know-when-someone-reblogs-my-post-and-what-about-likes-comments-notes">Okay, but, what how do I know when someone reblogs my post? And what about likes? Comments? Notes?</h4>
+<p>Yes, that's absolutely important! On a blogging site like Cohost, you receive notifications when someone reblogs your post. That's totally doable using a decentralized distributed network, and so are likes, comments, tumblr-style notes, etc. I'd argue it's actually very important for forming a community &mdash; you want to know when people reblog your posts, you want to interact with others through comments, you want to like others' posts without reblogging, you want to discover new people through tags… Unfortunately, this is all beyond the scope of where I'm at right now. I would <strong><em>really</em></strong> love to implement all of this, though, and I do have some ideas. Feel free to follow me at <a href="https://bluetinge.dev/rss.xml">bluetinge.dev/rss.xml</a> to get updated when I update this project, and you can always feel free to contact me on Discord if you'd like to chat or collaborate directly (I'm <a href="https://github.com/BlueTinge">@BlueTinge</a>). </p>
+<p>Here's a shortlist of planned updates and what I'd like to do:</p>
+<ol start="0">
+<li>Some minor usability updates, such as letting the button open a mini reblog frame in the existing page (if supported), and some better error handling and formatting controls.</li>
+<li>Making a tool to generate a blog webpage from your RSS feed, optionally adding the "posted by" header and reblog button &mdash; this will just be nice to have for my own site, frankly, to keep the styles consistent, though I'd like to make it for other people too. Basically just my own version of RSS2HTML, except it's a script you stick on your webpage (I like RSS2HTML but there's some areas I'd like to improve).</li>
+<li>Streamlining reblogging via integration with the NeoCities and GitHub Pages APIs &mdash; this will be optional, but it should make it a lot easier to use and friendlier for newcomers. I've looked into it and it looks doable. </li>
+<li>A cohost-like feed reader &mdash; I just think this'd be fun to make, and it could have the added benefit of putting the reblog button below all the posts and integrating it more easily. Let me know if this is something people would actually like.</li>
+<li>A way to do all the complicated features I talked about above: this is totally doable, and it comes with the advantage of not having to rely on some centralized server. I recognize that this is kinda just Fediverse, so maybe this would be an RSS-to-ActivityPub integration? I have a lot more reading to do to figure it out. Even without Fediverse I've got a few ideas on how I might be able to make some of those features working quickly and without too much of a high barrier to entry (fun fact: rss already supports comments through wfw:comments, so this already has a starting point of a sort). </li>
+</ol>
+<p>Let me know if any of the above sounds interesting!</p>
+<h3 id="thats-great-but-how-do-i-do-get-started-please-tell-me-already">That's great but how do I do get started please tell me already</h3>
+<p>Yeah, okay! Here's a simple guide to getting started with RSS (using GitHub). If you already have your own blog (tumblr, your own site, whatever) and want to keep using that, you totally can: just follow the below steps to make an RSS feed that you can use to reblog other people's posts.</p>
+<ol>
+<li><strong>Make a new RSS feed</strong>: You can use <a href="https://chaiaeran.github.io/RuSShdown/">RuSSHDown</a> for this! It's pretty self-explanatory: the only special note I'll make is, if you don't have a website yet, just put down "Link" or something for the website link and we'll edit it later.</li>
+<li><strong>Host the feed</strong>: Make an account and new repository on <a href="https://github.com/">GitHub</a>. Once you've created the new repository, upload your rss.xml file to it get the "raw" link to the file. You can find this by clicking on the file, and clicking on the "raw" button in the upper-righthand corner (its behind the three-dots button on mobile). As an example, the link might look something like this: <a href="https://raw.githubusercontent.com/bluetinge/bluetinge.dev/refs/heads/main/rss.xml">https://raw.githubusercontent.com/bluetinge/bluetinge.dev/refs/heads/main/rss.xml</a>.</li>
+<li><strong>Edit your rss.xml to have the correct link</strong>: Find the line that looks like this: <code>&lt;atom:link href="Link/rss.xml" rel="self" type="application/rss+xml"/&gt;</code> and change Link/rss.xml to the link you copied. If you are not planning to host a website, you can replace Link/rss.xml in the <code>&lt;link&gt;</code> tag with the raw github link as well &mdash; and you are done! Just use that raw link as the link to your feed (or, you know, make a bit.ly pointing to it or something).</li>
+<li><strong>Host your site via github pages</strong> (<em>optional</em>): You can use rss2html to easily turn your RSS feed into an actual blog webpage &mdash; just follow the directions on the <a href="https://rss.bloople.net/">rss2html</a> website, and embed it in an html page! I have an example of what this html page could look like <a href="https://github.com/bluetinge/bluetinge.dev/blob/main/rss.xml">here</a>. I'm planning to update the style on this to make it look more like cohost, but hey, make it look like whatever you want!</li>
+</ol>
+<p>And that's it! Please let me know if you think it's neat, or you have any questions comments or concerns! And again if you want to keep up with updates you can find me at <a href="https://bluetinge.dev/blog">bluetinge.dev/blog</a>, or follow me at <a href="https://bluetinge.dev/rss.xml">bluetinge.dev/rss</a>. Thanks for reading!!</p>
+
+  </div>
+  <hr class="rssr-hr rssr-footer-divider">
+  <div class="rssr-section rssr-footer">
+    <p><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://purl.org/rssr/reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=https%3A%2F%2Fbluetinge.dev%2Fblog%23introducing_a_reblog_button_for_your_rss_feeds&link=https%3A%2F%2Fbluetinge.dev%2Fblog%23introducing_a_reblog_button_for_your_rss_feeds&name=BlueTinge&icon=https%3A%2F%2Fwww.bluetinge.dev%2Ffavicon.png" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://purl.org/rssr/rss-icon" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="https://purl.org/rssr/script"></script>
+  </div>
+</div>
+
+]]>
+      </description>
+      <category>
+        original
+      </category>
+      <category>
+        rss-reblog
+      </category>
+      <category>
+        rssr
+      </category>
+      <category>
+        rss
+      </category>
+      <category>
+        my tools
+      </category>
+      <pubDate>
+        Fri, 27 Sep 2024 18:29:59 GMT
+      </pubDate>
+    </item>
+  </channel>
+</rss>

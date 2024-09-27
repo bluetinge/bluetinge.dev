@@ -1,6 +1,10 @@
 
 # Projects
 
+This site is super under-construction... for a link to my RSS Reblogger see [rssr.bluetinge.dev](https://rssr.bluetinge.dev)! And my blog is [here](https://rssr.bluetinge.dev/blog), also under construction. 
+
+[Follow me on RSS](https://bluetinge.dev/rss.xml)
+
 ### Eberron
 
 Eberron-related things, by [Fralexion](https://fralexion.tumblr.com/)

@@ -19,6 +19,85 @@
     <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">
       https://bluetinge.dev/favicon.png
     </rssr:displayIcon>
+
+    <item>
+      <author>
+        admin@bluetinge.dev (Blue Tinge)
+      </author>
+      <title>
+        Sharing some updates I've made to make resharing RSS feeds as streamlined as possible
+      </title>
+      <guid isPermaLink="false">
+        resshare-updates
+      </guid>
+      <link>
+        https://bluetinge.dev/blog#resshare-updates
+      </link>
+      <description>
+        <![CDATA[
+<div class="rssr-item">
+
+<!-- RSS-OP Header -->
+  <div class="rssr-section rssr-post-original">
+    <div class="rssr-section-header rssr-op-header">
+      <p><small class="rssr-font rssr-op-header-font" style="vertical-align:middle;padding:0.36em;">
+        <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+          <img style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt="">
+          <b>BlueTinge</b>
+        </a><i><a href="https://bluetinge.dev/blog#resshare-updates" target="_blank" rel="noopener noreferrer">posted</a><time class="rssr-datetime" datetime="2024-09-27T18:29:59.380Z"> on 9/27/2024</time>:</i>
+      </small></p>
+    </div>
+<!-- End RSS-OP Header -->
+
+    <h4 id="resshare-updates">Sharing some updates I've made to make resharing RSS feeds as streamlined as possible</h4>
+
+    <p>I figured I'd share a few more edits I've made to <a href="https://cohost.org/bluetinge/post/7852571-introducing-a-reblo">ReSShaRe</a> (that's probably what I'll end up calling it, thanks for the suggestion <a href="https://tempest.nekoweb.org/">@sutempest</a> !)</p>
+    <p><img src="https://rssr.bluetinge.dev/images/saving-feed.gif" alt="" /></p>
+    <p>The goal at this point is to make it as quick and easy to use as possible -- so to that end, I've added 2 things: </p>
+    <ol>
+    <li>you can save your feed once you've added a new post instead of having to download it, and it'll automatically load whatever the last saved feed was (and give you a chance to change it if you want to). So I could see a scenario where I'm browsing my feed (maybe on my phone), see posts I'd like to share and add them to my feed file, but wait until later in the day to post them when I have a minute to upload my RSS. </li>
+    <li>When you click the share button, it'll try to open up ReSShaRe in the same tab, rather than making a new tab. Note that it'll default to opening in a new tab if it can't open it in the same window for whatever reason -- this is the default behavior in most feed readers I've tested, such as Feedly and Inoreader. At some point, though, I'd like to make a browser extension that would enable this as default behavior no matter where the button is located.</li>
+    </ol>
+    <p>I do realize that "just go make your own website" is still a pretty high barrier of entry, but I figure that whatever tools we can make to adapt to using RSS feeds will help keep our community together as much as possible. To that end, there's two main things I want to add next:</p>
+    <ol>
+    <li>A notes / "<em>Name</em> reshared this post" feature -- basically a way to see who else has reshared a given post. This part is incredibly important for building community -- it lets you see who else is following you and interested in what you have to say, and makes it easier to start forming new connections! This will unfortunately require a little bit of server side stuff to make it work, but honestly I should be able to get it working pretty quickly now that I'm not forcing myself to do everything client-side. (Though I still dream of making it a big decentralized network…)</li>
+    <li>An easier way for people to get started -- I kind of want to have a 1-click GitHub pages template that'll immediately put together an RSS feed and blog, complete with a default theme that's reminiscent of Cohost. The advantage of using GH pages for this is they have <a href="https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps">tools</a> that could easily let me integrate it with ReSShaRe: so in other words, you could immediately update your feed by clicking a button, rather than having to download and re-upload your feed in order to make any posts. (Neocities integration looks possible too, as they have a pretty good REST API, though I'll probably do GH Pages first).</li>
+    </ol>
+    <p>And on that note…</p>
+    <p>Honestly, I only started using Cohost recently, but it's already become something so close to my heart. It's been amazing to see how much effort people have put into making sure the community is able to stick together in some form, and my only wish is that I could have gotten something out to contribute to that effort sooner. Either way, I'll keep doing my best  to update this project and work on whatever else I can think of to make RSS feeds feel a little more connected. Feel free to follow me at my <a href="https://bluetinge.dev/rss.xml">feed</a> or just read my <a href="https://bluetinge.dev">blog</a> if you would like to see more updates.</p>
+    <p>So long, Cohost, and thanks for everything.</p>
+
+  </div>
+<!-- RSS Reblog Button -->
+  <hr class="rssr-hr rssr-footer-divider">
+  <div class="rssr-section rssr-footer">
+    <p><small class="rssr-font rssr-footer-font" style="vertical-align:middle;text-color:blue;"><a href="https://rssr.bluetinge.dev/rss-reblog.html?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&link=https%3A%2F%2Fbluetinge.dev%2Fblog%23resshare-updates&guid=resshare-updates&name=BlueTinge&icon=https%3A%2F%2Fbluetinge.dev%2Ffavicon.png" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://purl.org/rssr/rss-icon" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="https://purl.org/rssr/script" charset="utf-8"></script>
+  </div>
+<!-- End RSS Reblog Button -->
+</div>
+]]>
+      </description>
+      <category>
+        original
+      </category>
+      <category>
+        ReSShaRe
+      </category>
+      <category>
+        rssr
+      </category>
+      <category>
+        rss
+      </category>
+      <category>
+        my tools
+      </category>
+      <pubDate>
+        Tue, 01 Oct 2024 05:06:11 GMT
+      </pubDate>
+    </item>
+
     <item>
       <author>
         admin@bluetinge.dev (Blue Tinge)
@@ -106,7 +185,7 @@
         original
       </category>
       <category>
-        rss-reblog
+        ReSShaRe
       </category>
       <category>
         rssr

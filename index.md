@@ -16,4 +16,5 @@ Eberron-related things, by [Fralexion](https://fralexion.tumblr.com/)
 
 ### BlueTinge
 
+- [Shader editor](./shader-editor.html)
 - [Worlds Unknown](./worlds-unknown/main.html)

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TWGL Live Shader Editor (Side-by-Side)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    #container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #ui {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 200px;
+      max-width: 800px;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+      overflow: hidden;
+      flex: 0 0 400px; /* Start at 400px wide */
+    }
+    
+    canvas {
+      flex: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      font-family: monospace;
+      font-size: 13px;
+      background: #111;
+      color: #eee;
+      border: none;
+      outline: none;
+      padding: 0.5em;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-top: 1px solid #444;
+      cursor: pointer;
+    }
+
+    #log {
+      font-size: 12px;
+      color: #f66;
+      background: #111;
+      padding: 0.25em 0.5em;
+      white-space: pre-wrap;
+      border-top: 1px solid #222;
+      max-height: 12em;
+      overflow-y: auto;
+    }
+    
+    #divider {
+      min-width: 5px;
+      width: 5px;
+      cursor: col-resize;
+      background: #444;
+      z-index: 5;
+    }
+    #divider:hover {
+      background: #666;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div id="ui">
+    <div id="editor-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+      <textarea id="shader" style="flex: 1; min-height: 0;"></textarea>
+      <!-- <div id="editor" style="flex: 1; min-height: 0;"></div> -->
+      <button id="compile">Compile Shader</button>
+      <div id="log"></div>
+      <div id="uniform-panel" style="padding: 0.5em; background: #1b1b1b; border-top: 1px solid #333; overflow-y: auto;">
+        <strong>Uniforms</strong>
+        <div id="uniforms" style="margin-top: 0.5em;"></div>
+      </div>
+    </div>
+  </div>
+  <div id="divider"></div>
+  <canvas id="c"></canvas>
+</div>
+
+<!-- <script type="module"> -->
+  <!-- import { EditorView, basicSetup } from "https://esm.sh/@codemirror/basic-setup@0.20.2?pin=v123"; -->
+  <!-- import { EditorState } from "https://esm.sh/@codemirror/state@0.19.1?pin=v123"; -->
+  <!-- import { cpp } from "https://esm.sh/@codemirror/lang-cpp@0.20.1?pin=v123"; -->
+  <!-- import { oneDark } from "https://esm.sh/@codemirror/theme-one-dark@0.19.6?pin=v123"; -->
+
+  <!-- window.initCodeMirror = function(startValue, onChange) { -->
+    <!-- const editor = new EditorView({ -->
+      <!-- state: EditorState.create({ -->
+        <!-- doc: startValue, -->
+        <!-- extensions: [ -->
+          <!-- basicSetup, -->
+          <!-- cpp(), -->
+          <!-- oneDark, -->
+          <!-- EditorView.updateListener.of((v) => { -->
+            <!-- if (v.docChanged) { -->
+              <!-- onChange(editor.state.doc.toString()); -->
+            <!-- } -->
+          <!-- }) -->
+        <!-- ] -->
+      <!-- }), -->
+      <!-- parent: document.getElementById("editor") -->
+    <!-- }); -->
+    <!-- return editor; -->
+  <!-- }; -->
+<!-- </script> -->
+
+
+
+<script type="module">
+import * as twgl from './twgl-full.module.js';
+
+// load width
+const savedWidth = localStorage.getItem("shader_ui_width");
+if (savedWidth) {
+  document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
+}
+
+let uniformValues = {}; // stores name: float
+let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
+const uniformsDiv = document.getElementById("uniforms");
+
+const canvas = document.getElementById("c");
+const gl = canvas.getContext("webgl2");
+if (!gl) throw new Error("WebGL2 not supported");
+
+twgl.resizeCanvasToDisplaySize(gl.canvas);
+
+const defaultFrag = `#version 300 es
+precision highp float;
+uniform float u_brightness;
+in vec2 uv;
+out vec4 outColor;
+void main() {
+  outColor = vec4(uv * u_brightness, 0.5 + 0.5 * sin(uv.x * 10.0), 1.0);
+}`;
+
+let shaderCode = localStorage.getItem("shader_code") || defaultFrag;
+
+//let editor = initCodeMirror(shaderCode, (newCode) => {
+//  shaderCode = newCode;
+//});
+document.getElementById("shader").value = shaderCode;
+
+const vs = `#version 300 es
+in vec4 position;
+uniform mat4 u_modelViewProjection;
+out vec2 uv;
+void main() {
+  uv = position.xy * 0.5 + 0.5;
+  gl_Position = u_modelViewProjection * position;
+}`;
+
+let currentProgramInfo = twgl.createProgramInfo(gl, [vs, defaultFrag]);
+const bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+const uniforms = {};
+
+let yaw = 0, pitch = 0, radius = 3;
+const keys = {};
+window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+// mouse resize
+const divider = document.getElementById("divider");
+let resizing = false;
+divider.addEventListener("mousedown", (e) => {
+  resizing = true;
+  document.body.style.cursor = "col-resize";
+  e.preventDefault(); // prevent canvas focus
+});
+
+window.addEventListener("mouseup", () => {
+  resizing = false;
+  document.body.style.cursor = "";
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (resizing) {
+    const min = 200;
+    const max = 800;
+    const newWidth = Math.min(max, Math.max(min, e.clientX));
+    document.getElementById("ui").style.flexBasis = `${newWidth}px`;
+    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    localStorage.setItem("shader_ui_width", newWidth); // save
+  }
+});
+
+
+// Mouse drag
+let dragging = false, lastX = 0, lastY = 0;
+canvas.addEventListener("mousedown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener("mouseup", () => dragging = false);
+window.addEventListener("mousemove", (e) => {
+  if (!dragging || resizing) return; // <- ignore camera drag while resizing
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  yaw -= dx * 0.005;
+  pitch += dy * 0.005;
+  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+});
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  radius *= Math.exp(e.deltaY * -0.001 * 0.5);
+  radius = Math.max(0.5, Math.min(10, radius));
+});
+
+function updateKeyboard(dt) {
+  const s = 1.5;
+  if (keys["arrowleft"]) yaw -= s * dt;
+  if (keys["arrowright"]) yaw += s * dt;
+  if (keys["arrowup"]) pitch += s * dt;
+  if (keys["arrowdown"]) pitch -= s * dt;
+  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+}
+
+// error callback for twgl
+function logError(msg, line) {
+  console.warn(msg);
+  const lines = msg.split("\n");
+  var logMsg = ""; var logall = false;
+  for (let i = 0; i < lines.length; i++) {
+    if(lines[i] == "\0") continue;
+    if(lines[i].startsWith("^^^")) logMsg += `${lines[i-2]}\n${lines[i]}\n`;
+    if(lines[i].startsWith("Error compiling")) logall = true;
+    if(logall) logMsg += `${lines[i]}\n`;
+  }
+  console.log(logMsg);
+  if (logMsg.length == 0) logMsg = msg;
+  document.getElementById("log").textContent = logMsg;
+  document.getElementById("log").style.color = "red";
+}
+
+function createFragmentProgram(fragSrc) {
+  try {
+    const newProgramInfo = twgl.createProgramInfo(gl, [vs, fragSrc], logError);
+    if(!newProgramInfo) return; //should already be logged due to logError
+    currentProgramInfo = newProgramInfo;
+    extractUniforms(currentProgramInfo.program);
+    document.getElementById("log").textContent = "Shader compiled successfully.";
+    document.getElementById("log").style.color = "white";
+    localStorage.setItem("shader_code", fragSrc); // save on success
+    // continue rendering if it stopped previously due to an error
+    if(!rendering) {
+      rendering = true;
+      requestAnimationFrame(render);
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById("log").textContent = err.message;
+    document.getElementById("log").style.color = "red";
+  }
+}
+
+function extractUniforms(program) {
+  uniformValues = {}; // reset
+  uniformsDiv.innerHTML = ''; // clear UI
+  const saved = JSON.parse(localStorage.getItem("shader_uniforms") || "{}");
+
+  const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+  const uniformTypeMap = {
+    [gl.FLOAT]:      { size: 1, label: 'float', parser: parseFloat },
+    [gl.FLOAT_VEC2]: { size: 2, label: 'vec2',  parser: parseFloat },
+    [gl.FLOAT_VEC3]: { size: 3, label: 'vec3',  parser: parseFloat },
+    [gl.FLOAT_VEC4]: { size: 4, label: 'vec4',  parser: parseFloat },
+    [gl.INT]:        { size: 1, label: 'int',   parser: parseInt   },
+    [gl.BOOL]:       { size: 1, label: 'bool',  parser: x => !!parseInt(x) },
+  };
+
+  for (let i = 0; i < numUniforms; i++) {
+    const info = gl.getActiveUniform(program, i);
+    if (!info || !info.name || info.size > 1) continue; // skip arrays for now
+
+    const typeInfo = uniformTypeMap[info.type];
+    if (!typeInfo) continue; // skip unsupported types for now
+
+    const defaultVal = Array(typeInfo.size).fill(1);
+    if (!(info.name in saved)) {
+      saved[info.name] = defaultVal;
+    }
+
+    uniformValues[info.name] = saved[info.name];
+
+    // Create UI
+    const wrapper = document.createElement("div");
+    wrapper.style.marginBottom = "0.25em";
+
+    const label = document.createElement("label");
+    label.textContent = `${info.name} (${typeInfo.label})`;
+    label.style.display = "block";
+    label.style.marginBottom = "0.25em";
+    wrapper.appendChild(label);
+
+    const value = uniformValues[info.name];
+
+    for (let j = 0; j < typeInfo.size; j++) {
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "0.01";
+      input.value = value[j];
+      input.style.width = "4em";
+      input.style.marginRight = "0.25em";
+
+      const index = j;
+      input.addEventListener("input", () => {
+        const parsed = typeInfo.parser(input.value);
+        if (!isNaN(parsed)) {
+          value[index] = parsed;
+          saved[info.name] = value;
+          uniformValues[info.name] = value;
+          localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+        }
+      });
+
+      wrapper.appendChild(input);
+    }
+
+    uniformsDiv.appendChild(wrapper);
+  }
+
+  // Final sync
+  localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+}
+
+
+
+document.getElementById("compile").addEventListener("click", () => {
+  const src = document.getElementById("shader").value;
+  //const src = shaderCode;
+  createFragmentProgram(src);
+});
+
+let lastTime = 0;
+function render(time) {
+  try {
+    time *= 0.001;
+    const dt = time - lastTime;
+    lastTime = time;
+
+    updateKeyboard(dt);
+    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+
+    const eye = [
+      radius * Math.cos(pitch) * Math.sin(yaw),
+      radius * Math.sin(pitch),
+      radius * Math.cos(pitch) * Math.cos(yaw)
+    ];
+    const target = [0, 0, 0];
+    const up = [0, 1, 0];
+
+    const proj = twgl.m4.perspective(Math.PI / 4, gl.canvas.width / gl.canvas.height, 0.1, 100);
+    const view = twgl.m4.lookAt(eye, target, up);
+    const vp = twgl.m4.multiply(proj, twgl.m4.inverse(view));
+    const model = twgl.m4.identity();
+    const mvp = twgl.m4.multiply(vp, model);
+
+    Object.assign(uniforms, uniformValues); // add float uniforms
+    uniforms.u_modelViewProjection = mvp;
+
+    gl.useProgram(currentProgramInfo.program);
+    twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
+    twgl.setUniforms(currentProgramInfo, uniforms);
+    twgl.drawBufferInfo(gl, bufferInfo);
+
+    
+    requestAnimationFrame(render);
+    rendering = true;
+  } catch (err) {
+    console.error(err);
+    rendering = false;
+    document.getElementById("log").textContent = err.message;
+    document.getElementById("log").style.color = "red";
+    
+  }
+}
+
+createFragmentProgram(shaderCode);
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

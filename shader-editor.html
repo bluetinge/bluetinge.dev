@@ -145,7 +145,36 @@ if (savedWidth) {
   document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
 }
 
+let lastMouseX = 0; lastMouseY = 0;
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+    lastMouseX = e.clientX - rect.left;
+      lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
+      });
 let uniformValues = {}; // stores name: float
+const SYS_UNIFORMS = {
+  SYS_TIME:      { type: GL.FLOAT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS[SYS_TIME]["value"];
+    if(!value) return;
+    value[0] = info["time"];
+    uniformValues["SYS_TIME"] = value;
+  }},
+  SYS_RESOLUTION:{ type: GL.FLOAT_VEC3,    size: 3, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_RESOLUTION"]["value"];
+    if (!value) return;
+    value[0] = gl.canvas.width;
+    value[1] = gl.canvas.height;
+    value[2] = gl.canvas.height / gl.canvas.width;
+    uniformValues["SYS_RESOLUTION"] = value;
+  }},
+  SYS_MOUSE:     { type: GL.FLOAT_VEC2, size: 2, update: (info)=>{
+      let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
+      if(!value) return;
+      value[0] = lastMouseX;
+      value[1] = lastMouseY;
+      uniformValues["SYS_MOUSE"] = value;
+  } }
+};
 let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
 const uniformsDiv = document.getElementById("uniforms");
 
@@ -282,7 +311,9 @@ function createFragmentProgram(fragSrc) {
 
 function extractUniforms(program) {
   uniformValues = {}; // reset
+  for (const sys of SYS_UNIFORMS) { sys["value"] = underfined; }
   uniformsDiv.innerHTML = ''; // clear UI
+
   const saved = JSON.parse(localStorage.getItem("shader_uniforms") || "{}");
 
   const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
@@ -300,6 +331,10 @@ function extractUniforms(program) {
     const info = gl.getActiveUniform(program, i);
     if (!info || !info.name || info.size > 1) continue; // skip arrays for now
 
+    const isSys = info.name in SYS_UNIFORMS;
+    if(isSys && info.type != SYS_UNIFORMS[info.name]) {
+      throw new Error(`System uniform ${info.name} must be of type ${uniformTypeMap[SYS_UNIFORMS[info.name]]["label"]})`);
+    }
     const typeInfo = uniformTypeMap[info.type];
     if (!typeInfo) continue; // skip unsupported types for now
 
@@ -331,15 +366,23 @@ function extractUniforms(program) {
       input.style.marginRight = "0.25em";
 
       const index = j;
+      if(isSys){
+        input.disabled = true;
+        input.style.background = "#222";
+        input.title = "Built-in system uniform (read-only)";
+        SYS_UNIFORMS[info.name]["value"] = value;
+      }
+      else{
       input.addEventListener("input", () => {
         const parsed = typeInfo.parser(input.value);
-        if (!isNaN(parsed)) {
-          value[index] = parsed;
-          saved[info.name] = value;
-          uniformValues[info.name] = value;
-          localStorage.setItem("shader_uniforms", JSON.stringify(saved));
-        }
-      });
+          if (!isNaN(parsed)) {
+            value[index] = parsed;
+            saved[info.name] = value;
+            uniformValues[info.name] = value;
+            localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+          }
+        });
+      }
 
       wrapper.appendChild(input);
     }
@@ -348,7 +391,7 @@ function extractUniforms(program) {
   }
 
   // Final sync
-  localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+  //localStorage.setItem("shader_uniforms", JSON.stringify(saved));
 }
 
 
@@ -386,6 +429,8 @@ function render(time) {
     const model = twgl.m4.identity();
     const mvp = twgl.m4.multiply(vp, model);
 
+    // Uniforms
+    for (const SYS of SYS_UNIFORMS) { SYS["update"]({"time":time});}
     Object.assign(uniforms, uniformValues); // add float uniforms
     uniforms.u_modelViewProjection = mvp;
 

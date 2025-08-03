@@ -139,58 +139,71 @@
 <script type="module">
 import * as twgl from './twgl-full.module.js';
 
+const canvas = document.getElementById("c");
+const gl = canvas.getContext("webgl2");
+if (!gl) throw new Error("WebGL2 not supported");
+twgl.resizeCanvasToDisplaySize(gl.canvas);
+let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
+
 // load width
 const savedWidth = localStorage.getItem("shader_ui_width");
 if (savedWidth) {
   document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
 }
 
-let lastMouseX = 0; lastMouseY = 0;
+// uniforms
+let lastMouseX = 0; let lastMouseY = 0;
 canvas.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
-    lastMouseX = e.clientX - rect.left;
-      lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
-      });
+  lastMouseX = e.clientX - rect.left;
+  lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
+});
 let uniformValues = {}; // stores name: float
 const SYS_UNIFORMS = {
-  SYS_TIME:      { type: GL.FLOAT,   size: 1, update:(info)=>{
-    let value = SYS_UNIFORMS[SYS_TIME]["value"];
+  SYS_TIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_TIME"]["value"];
     if(!value) return;
     value[0] = info["time"];
     uniformValues["SYS_TIME"] = value;
+    SYS_UNIFORMS["SYS_TIME"]["input"][0].value = value[0];
   }},
-  SYS_RESOLUTION:{ type: GL.FLOAT_VEC3,    size: 3, update: (info)=>{
+  SYS_RESOLUTION:{ type: gl.FLOAT_VEC3,    size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_RESOLUTION"]["value"];
     if (!value) return;
     value[0] = gl.canvas.width;
     value[1] = gl.canvas.height;
     value[2] = gl.canvas.height / gl.canvas.width;
     uniformValues["SYS_RESOLUTION"] = value;
+    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][0].value = value[0];
+    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][1].value = value[1];
+    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][2].value = value[2];
   }},
-  SYS_MOUSE:     { type: GL.FLOAT_VEC2, size: 2, update: (info)=>{
-      let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
-      if(!value) return;
-      value[0] = lastMouseX;
-      value[1] = lastMouseY;
-      uniformValues["SYS_MOUSE"] = value;
+  SYS_MOUSE:     { type: gl.FLOAT_VEC2, size: 2, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
+    if(!value) return;
+    value[0] = lastMouseX / gl.canvas.width;
+    value[1] = lastMouseY / gl.canvas.height;
+    uniformValues["SYS_MOUSE"] = value;
+    SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
+    SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
   } }
 };
-let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
 const uniformsDiv = document.getElementById("uniforms");
-
-const canvas = document.getElementById("c");
-const gl = canvas.getContext("webgl2");
-if (!gl) throw new Error("WebGL2 not supported");
-
-twgl.resizeCanvasToDisplaySize(gl.canvas);
 
 const defaultFrag = `#version 300 es
 precision highp float;
+
 uniform float u_brightness;
+uniform vec2 SYS_MOUSE;
+uniform vec3 SYS_RESOLUTION;
+uniform float SYS_TIME;
+
 in vec2 uv;
 out vec4 outColor;
+
 void main() {
-  outColor = vec4(uv * u_brightness, 0.5 + 0.5 * sin(uv.x * 10.0), 1.0);
+  outColor = vec4(uv, 0.5 + 0.5 * sin(uv.x * 10.0), 1.0);
+  outColor = vec4(outColor.xyz * u_brightness, 1.0);
 }`;
 
 let shaderCode = localStorage.getItem("shader_code") || defaultFrag;
@@ -311,7 +324,7 @@ function createFragmentProgram(fragSrc) {
 
 function extractUniforms(program) {
   uniformValues = {}; // reset
-  for (const sys of SYS_UNIFORMS) { sys["value"] = underfined; }
+  for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["input"] = undefined; sys["value"] = undefined;}
   uniformsDiv.innerHTML = ''; // clear UI
 
   const saved = JSON.parse(localStorage.getItem("shader_uniforms") || "{}");
@@ -332,8 +345,8 @@ function extractUniforms(program) {
     if (!info || !info.name || info.size > 1) continue; // skip arrays for now
 
     const isSys = info.name in SYS_UNIFORMS;
-    if(isSys && info.type != SYS_UNIFORMS[info.name]) {
-      throw new Error(`System uniform ${info.name} must be of type ${uniformTypeMap[SYS_UNIFORMS[info.name]]["label"]})`);
+    if(isSys && info.type != SYS_UNIFORMS[info.name]["type"]) {
+      throw new Error(`System uniform ${info.name} must be of type ${uniformTypeMap[SYS_UNIFORMS[info.name]["type"]]["label"]}`);
     }
     const typeInfo = uniformTypeMap[info.type];
     if (!typeInfo) continue; // skip unsupported types for now
@@ -356,6 +369,10 @@ function extractUniforms(program) {
     wrapper.appendChild(label);
 
     const value = uniformValues[info.name];
+    if(isSys){
+      SYS_UNIFORMS[info.name]["value"] = value;
+      SYS_UNIFORMS[info.name]["input"] = []
+    }
 
     for (let j = 0; j < typeInfo.size; j++) {
       const input = document.createElement("input");
@@ -370,7 +387,7 @@ function extractUniforms(program) {
         input.disabled = true;
         input.style.background = "#222";
         input.title = "Built-in system uniform (read-only)";
-        SYS_UNIFORMS[info.name]["value"] = value;
+        SYS_UNIFORMS[info.name]["input"][j] = input;
       }
       else{
       input.addEventListener("input", () => {
@@ -430,7 +447,7 @@ function render(time) {
     const mvp = twgl.m4.multiply(vp, model);
 
     // Uniforms
-    for (const SYS of SYS_UNIFORMS) { SYS["update"]({"time":time});}
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"time":time});}
     Object.assign(uniforms, uniformValues); // add float uniforms
     uniforms.u_modelViewProjection = mvp;
 

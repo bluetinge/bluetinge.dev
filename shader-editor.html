@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TWGL Live Shader Editor (Side-by-Side)</title>
+  <title>Shader Editor</title>
   <style>
     html, body {
       margin: 0;
@@ -20,6 +20,17 @@
       width: 100%;
       overflow: hidden;
     }
+    
+    canvas {
+      flex: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    canvas:active {
+      cursor: grabbing;
+    }
 
     #ui {
       display: flex;
@@ -33,17 +44,6 @@
       flex: 0 0 400px; /* Start at 400px wide */
     }
     
-    canvas {
-      flex: 1;
-      display: block;
-      width: 100%;
-      height: 100%;
-      cursor: grab;
-    }
-    canvas:active {
-      cursor: grabbing;
-    }
-
     textarea {
       flex: 1;
       width: 100%;
@@ -55,6 +55,7 @@
       border: none;
       outline: none;
       padding: 0.5em;
+      overflow-y: auto;
     }
 
     button {
@@ -64,6 +65,11 @@
       padding: 0.5em 1em;
       border-top: 1px solid #444;
       cursor: pointer;
+      font-family: monospace;
+      font-weight: medium;
+    }
+    button:hover {
+      font-weight: bold;
     }
 
     #log {
@@ -77,15 +83,155 @@
       overflow-y: auto;
     }
     
-    #divider {
-      min-width: 5px;
-      width: 5px;
-      cursor: col-resize;
+    .shader-tab {
+      flex: 1;
+      padding: 0.4em;
+      background: #222;
+      border: none;
+      color: #ccc;
+      font-family: monospace;
+      cursor: pointer;
+    }
+    .shader-tab.active {
+      background: #333;
+      color: white;
+      font-weight: bold;
+    }
+    
+#uniform-panel {
+    
+      overflow: auto;
+      min-height: 10%;
+      max-height: 80%;
+      display: block;
+      whiteSpace: nowrap;
+      background: #1b1b1b;
+      border-top: 1px solid #333;
+      overflow-y: auto;
+      flex: 0 0 40%; /* Start at 40% tall */
+    }
+    
+.variables-container {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  column-gap: 0.5em;
+  row-gap: 0.5em;
+  align-items: start;
+  font-family: monospace;
+  font-size: 14px;
+  overflow-y: auto;
+  padding: 0.5em
+}
+.variables-container.inactive{
+  display:none;
+}
+
+
+.variable-wrapper {
+  display: contents; /* Allow child elements to align directly in the grid */
+}
+
+.variable-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 8em;
+}
+
+/* If only one rowGroup, label in column 1, rowGroup in column 2 */
+.single-row .variable-label {
+  grid-column: 2;
+}
+
+/* For multi-row: label spans 2 columns, then contents span 2 below */
+.multirow .variable-label {
+  grid-column: 2 / span 3;
+}
+
+.single-row .variable-contents {
+  grid-column: 3;
+  display: inline;
+  overflow-x: visible;
+  white-space: nowrap;
+  gap: 0.25em;
+}
+
+.multirow .variable-contents {
+  grid-column: 2 / span 3;
+  display: block;
+  overflow: visible;
+  grid-template-columns: repeat(auto-fit, minmax(4em, auto));
+  gap: 0.25em 0.5em;
+}
+
+.variable-row { /*AKA rowGroup*/
+  display: block;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+.group-end.variable-row { /*ends group of matrices in array*/
+  margin-bottom: .25em;
+}
+    
+    .variable-input {
+      margin: 0.1em;
+      display: inline;
+      overflow: visible;
+    }
+    
+    input[type="number"] {
+      width: 4em;
+    }
+    
+    input[type="checkbox"] {
+      width: 2em;
+    }
+    
+    input:disabled {
+      background: #222;
+    }
+    
+    .collapse-arrow {
+      grid-column: 1;
+      font-family: sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 0.25em;
+      margin-left: 0.25em;
+      user-select: none;
+    }
+    
+    .single-row .collapse-arrow {
+      visibility: hidden;
+      grid-column: 1;
+    }
+    .multirow .collapse-arrow {
+      grid-column: 1;
+    }
+    
+    .collapsed .variable-contents {
+      display:none;
+    }
+
+    .divider {
       background: #444;
       z-index: 5;
     }
-    #divider:hover {
+    .divider:hover {
       background: #666;
+    }
+    
+    .col-divider {
+      min-width: 5px;
+      width: 5px;
+      cursor: col-resize;
+    }
+    
+    .row-divider {
+      min-height: 5px;
+      height: 5px;
+      cursor: row-resize;
     }
   </style>
 </head>
@@ -93,17 +239,27 @@
 <div id="container">
   <div id="ui">
     <div id="editor-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+      <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
+        <button id="tab-vertex" class="shader-tab">Vertex Shader</button>
+        <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
+      </div>
       <textarea id="shader" style="flex: 1; min-height: 0;"></textarea>
       <!-- <div id="editor" style="flex: 1; min-height: 0;"></div> -->
       <button id="compile">Compile Shader</button>
       <div id="log"></div>
-      <div id="uniform-panel" style="padding: 0.5em; background: #1b1b1b; border-top: 1px solid #333; overflow-y: auto;">
-        <strong>Uniforms</strong>
-        <div id="uniforms" style="margin-top: 0.5em;"></div>
+      <div id="uniform-divider" class="divider row-divider"></div>
+      <div id="uniform-panel">
+        <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
+          <button id="tab-attributes" class="shader-tab">Attributes</button>
+          <button id="tab-uniforms" class="shader-tab">Uniforms</button>
+        </div>
+        <!-- <strong>Uniforms</strong> -->
+        <div id="all-attributes" class="variables-container"></div>
+        <div id="all-uniforms" class="variables-container"></div>
       </div>
     </div>
   </div>
-  <div id="divider"></div>
+  <div id="canvas-divider" class="divider col-divider"></div>
   <canvas id="c"></canvas>
 </div>
 
@@ -150,6 +306,12 @@ const savedWidth = localStorage.getItem("shader_ui_width");
 if (savedWidth) {
   document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
 }
+// load height
+const savedHeight = localStorage.getItem("uniforms_height");
+if (savedHeight) {
+  document.getElementById("uniform-panel").style.flexBasis = `${savedHeight}px`;
+}
+else document.getElementById("uniform-panel").style.flexBasis = `400px`;
 
 // uniforms
 let lastMouseX = 0; let lastMouseY = 0;
@@ -158,7 +320,6 @@ canvas.addEventListener("mousemove", (e) => {
   lastMouseX = e.clientX - rect.left;
   lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
 });
-let uniformValues = {}; // stores name: float
 const SYS_UNIFORMS = {
   SYS_TIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
     let value = SYS_UNIFORMS["SYS_TIME"]["value"];
@@ -186,9 +347,70 @@ const SYS_UNIFORMS = {
     uniformValues["SYS_MOUSE"] = value;
     SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
     SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
-  } }
+  }},
+  SYS_MVP:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_MVP"]["value"];
+    if(!value) return;
+    value = info.MVP
+    uniformValues["SYS_MVP"] = value;
+    for (const i in SYS_UNIFORMS["SYS_MVP"]["input"]) SYS_UNIFORMS["SYS_MVP"]["input"][i].value = Math.round(1000*value[i])/1000;
+  }},
 };
-const uniformsDiv = document.getElementById("uniforms");
+const uniformTypeMap = {
+  [gl.FLOAT]:       { size: 1, label: 'float', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC2]:  { size: 2, label: 'vec2',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC3]:  { size: 3, label: 'vec3',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC4]:  { size: 4, label: 'vec4',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2]:  { size: [2,2], label: 'mat2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x3]:  { size: [2,3], label: 'mat2x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x4]:  { size: [2,4], label: 'mat2x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x2]:  { size: [3,2], label: 'mat3x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3]:  { size: [3,3], label: 'mat3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x4]:  { size: [3,4], label: 'mat3x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x2]:  { size: [4,2], label: 'mat4x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x3]:  { size: [4,3], label: 'mat4x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4]:  { size: [4,4], label: 'mat4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.INT]:         { size: 1, label: 'int',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC2]:  { size: 2, label: 'ivec2',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC3]:  { size: 3, label: 'ivec3',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC4]:  { size: 4, label: 'ivec4',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT]:{ size: 1, label: 'uint',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC2]:{ size: 2, label: 'uvec2',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC3]:{ size: 3, label: 'uvec3',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC4]:{ size: 4, label: 'uvec4',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.BOOL]:        { size: 1, label: 'bool',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC2]:        { size: 2, label: 'bvec2',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC3]:        { size: 3, label: 'bvec3',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC4]:        { size: 4, label: 'bvec4',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+};
+const uniformsDiv = document.getElementById("all-uniforms");
+const attributesDiv = document.getElementById("all-attributes");
+
+let uniformValues = {};
+let attributeValues = {};
+let vertexCount = 4;
+let variablesTab = "uniforms";
+
+function updateVariableTabUI(newValue) {
+  // toggle tab
+  variablesTab = newValue;
+  document.getElementById("tab-uniforms").classList.toggle("active", variablesTab === "uniforms");
+  document.getElementById("tab-attributes").classList.toggle("active", variablesTab === "attributes");
+  // show/hide
+  document.getElementById("all-uniforms").classList.toggle("inactive", variablesTab !== "uniforms");
+  document.getElementById("all-attributes").classList.toggle("inactive", variablesTab !== "attributes");
+  //localStorage.setItem("active_variable_tab",variablesTab)
+}
+
+document.getElementById("tab-uniforms").addEventListener("click", () => {
+  updateVariableTabUI("uniforms");
+});
+
+document.getElementById("tab-attributes").addEventListener("click", () => {
+  updateVariableTabUI("attributes");
+});
+
+updateVariableTabUI(variablesTab); // initial update
 
 const defaultFrag = `#version 300 es
 precision highp float;
@@ -206,24 +428,55 @@ void main() {
   outColor = vec4(outColor.xyz * u_brightness, 1.0);
 }`;
 
+const defaultVert = `#version 300 es
+
+uniform mat4 SYS_MVP;
+
+in vec4 position;
+out vec2 uv;
+
+void main() {
+  uv = position.xy * 0.5 + 0.5;
+  gl_Position = SYS_MVP * position;
+}`;
+
+// shader code editors
+
 let shaderCode = localStorage.getItem("shader_code") || defaultFrag;
+let fragShaderCode = localStorage.getItem("frag_shader_code") || defaultFrag;
+let vertShaderCode = localStorage.getItem("vert_shader_code") || defaultVert;
+let activeShaderType = localStorage.getItem("active_shader_type") || "fragment"; // "vertex" or "fragment"
 
 //let editor = initCodeMirror(shaderCode, (newCode) => {
 //  shaderCode = newCode;
 //});
-document.getElementById("shader").value = shaderCode;
+document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
 
-const vs = `#version 300 es
-in vec4 position;
-uniform mat4 u_modelViewProjection;
-out vec2 uv;
-void main() {
-  uv = position.xy * 0.5 + 0.5;
-  gl_Position = u_modelViewProjection * position;
-}`;
+function updateTabUI(newValue) {
+  // save existing code
+  if(activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
+  else fragShaderCode = document.getElementById("shader").value;
+  // toggle tab
+  activeShaderType = newValue;
+  document.getElementById("tab-vertex").classList.toggle("active", activeShaderType === "vertex");
+  document.getElementById("tab-fragment").classList.toggle("active", activeShaderType === "fragment");
+  document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+  localStorage.setItem("active_shader_type",activeShaderType)
+}
 
-let currentProgramInfo = twgl.createProgramInfo(gl, [vs, defaultFrag]);
-const bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+document.getElementById("tab-vertex").addEventListener("click", () => {
+  updateTabUI("vertex");
+});
+
+document.getElementById("tab-fragment").addEventListener("click", () => {
+  updateTabUI("fragment");
+});
+
+updateTabUI(activeShaderType); // initial update
+
+let currentProgramInfo = twgl.createProgramInfo(gl, [defaultVert, defaultFrag]);
+let bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+console.log(bufferInfo)
 const uniforms = {};
 
 let yaw = 0, pitch = 0, radius = 3;
@@ -232,27 +485,47 @@ window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
 window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
 // mouse resize
-const divider = document.getElementById("divider");
-let resizing = false;
-divider.addEventListener("mousedown", (e) => {
-  resizing = true;
+const dividerC = document.getElementById("canvas-divider");
+const dividerU = document.getElementById("uniform-divider");
+let resizingCol = false;
+let resizingUniforms = false;
+
+dividerC.addEventListener("mousedown", (e) => {
+  resizingCol = true;
   document.body.style.cursor = "col-resize";
+  e.preventDefault(); // prevent canvas focus
+});
+dividerU.addEventListener("mousedown", (e) => {
+  resizingUniforms = true;
+  document.body.style.cursor = "row-resize";
   e.preventDefault(); // prevent canvas focus
 });
 
 window.addEventListener("mouseup", () => {
-  resizing = false;
+  resizingCol = false;
+  resizingUniforms = false;
   document.body.style.cursor = "";
 });
 
 window.addEventListener("mousemove", (e) => {
-  if (resizing) {
+  if (resizingCol) {
     const min = 200;
     const max = 800;
     const newWidth = Math.min(max, Math.max(min, e.clientX));
     document.getElementById("ui").style.flexBasis = `${newWidth}px`;
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     localStorage.setItem("shader_ui_width", newWidth); // save
+  }
+  else if (resizingUniforms){
+    const min = 75;
+    const max = 900;
+  const uiTop = document.getElementById("ui").getBoundingClientRect().top;
+  const totalHeight = document.getElementById("ui").clientHeight;
+
+  const fromTop = e.clientY - uiTop;
+  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 20));
+    document.getElementById("uniform-panel").style.flexBasis = `${newHeight}px`;
+    localStorage.setItem("uniforms_height", newHeight); // save
   }
 });
 
@@ -262,7 +535,7 @@ let dragging = false, lastX = 0, lastY = 0;
 canvas.addEventListener("mousedown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
 window.addEventListener("mouseup", () => dragging = false);
 window.addEventListener("mousemove", (e) => {
-  if (!dragging || resizing) return; // <- ignore camera drag while resizing
+  if (!dragging || resizingCol || resizingUniforms) return; // <- ignore camera drag while resizing
   const dx = e.clientX - lastX, dy = e.clientY - lastY;
   lastX = e.clientX; lastY = e.clientY;
   yaw -= dx * 0.005;
@@ -301,15 +574,19 @@ function logError(msg, line) {
   document.getElementById("log").style.color = "red";
 }
 
-function createFragmentProgram(fragSrc) {
+function createProgramFromSources(vertSrc, fragSrc) {
   try {
-    const newProgramInfo = twgl.createProgramInfo(gl, [vs, fragSrc], logError);
+    const newProgramInfo = twgl.createProgramInfo(gl, [vertSrc, fragSrc], logError);
     if(!newProgramInfo) return; //should already be logged due to logError
     currentProgramInfo = newProgramInfo;
-    extractUniforms(currentProgramInfo.program);
+    extractVariables(currentProgramInfo.program);
+    buildAttributeBuffers();
+    console.log(bufferInfo)
+    
     document.getElementById("log").textContent = "Shader compiled successfully.";
     document.getElementById("log").style.color = "white";
-    localStorage.setItem("shader_code", fragSrc); // save on success
+    localStorage.setItem("frag_shader_code", fragSrc); // save on success
+    localStorage.setItem("vert_shader_code", vertSrc); // save on success
     // continue rendering if it stopped previously due to an error
     if(!rendering) {
       rendering = true;
@@ -322,102 +599,251 @@ function createFragmentProgram(fragSrc) {
   }
 }
 
-function extractUniforms(program) {
+function extractVariables(program) {
   uniformValues = {}; // reset
+  attributeValues = {}; // reset
+  
+  // setting up system uniforms
   for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["input"] = undefined; sys["value"] = undefined;}
-  uniformsDiv.innerHTML = ''; // clear UI
+  // Not currently SYS_ATTRIBUTES but they would go here
 
-  const saved = JSON.parse(localStorage.getItem("shader_uniforms") || "{}");
-
+  // Extract uniforms and attributes from program
   const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
 
-  const uniformTypeMap = {
-    [gl.FLOAT]:      { size: 1, label: 'float', parser: parseFloat },
-    [gl.FLOAT_VEC2]: { size: 2, label: 'vec2',  parser: parseFloat },
-    [gl.FLOAT_VEC3]: { size: 3, label: 'vec3',  parser: parseFloat },
-    [gl.FLOAT_VEC4]: { size: 4, label: 'vec4',  parser: parseFloat },
-    [gl.INT]:        { size: 1, label: 'int',   parser: parseInt   },
-    [gl.BOOL]:       { size: 1, label: 'bool',  parser: x => !!parseInt(x) },
-  };
-
+  const uniformInfo = [];
   for (let i = 0; i < numUniforms; i++) {
     const info = gl.getActiveUniform(program, i);
-    if (!info || !info.name || info.size > 1) continue; // skip arrays for now
+    if(info && info.name) uniformInfo.push(info); 
+    else console.warn(`Malformed uniform ${i} extracted: `, info);
+  }
+  const attributeInfo = [];
+  for (let i = 0; i < numAttributes; i++) {
+    const info = gl.getActiveAttrib(program, i);
+    //if(info && info.name) info.location = gl.getAttribLocation(program, info.name);
+    if(info && info.name /*&& info.location*/) attributeInfo.push(info);
+    else console.warn(`Malformed attribute ${i} extracted: `, info);
+  }
 
-    const isSys = info.name in SYS_UNIFORMS;
-    if(isSys && info.type != SYS_UNIFORMS[info.name]["type"]) {
-      throw new Error(`System uniform ${info.name} must be of type ${uniformTypeMap[SYS_UNIFORMS[info.name]["type"]]["label"]}`);
-    }
-    const typeInfo = uniformTypeMap[info.type];
-    if (!typeInfo) continue; // skip unsupported types for now
+  // load saved values
+  const saved_variables = JSON.parse(localStorage.getItem("shader_variables") || "{}");
+  if(!saved_variables.uniforms) saved_variables.uniforms = {};
+  if(!saved_variables.attributes) saved_variables.attributes = {};
+  
+  // silly way of doing this but it works for now
+  //if(!saved_variables.attributes.position) 
+  saved_variables.attributes.position = { 
+      "value": [
+        -1, -1, 0, 1,  // bottom-left
+         1, -1, 0, 1,  // bottom-right
+        -1,  1, 0, 1,  // top-left
+         1,  1, 0, 1   // top-right
+      ]}
+  
+  uniformsDiv.innerHTML = ''; // clear UI
+  attributesDiv.innerHTML = ''; // clear UI
+  
+  buildVariableEditor("uniform", saved_variables, saved_variables.uniforms, uniformInfo, uniformValues, uniformsDiv);
+  buildVariableEditor("attribute", saved_variables, saved_variables.attributes, attributeInfo, attributeValues, attributesDiv);
+}
 
-    const defaultVal = Array(typeInfo.size).fill(1);
-    if (!(info.name in saved)) {
-      saved[info.name] = defaultVal;
-    }
-
-    uniformValues[info.name] = saved[info.name];
+function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,variableValues, editorDiv) {
+  // vertex count if attributes
+  if(variableType == "attribute") {
 
     // Create UI
     const wrapper = document.createElement("div");
-    wrapper.style.marginBottom = "0.25em";
+    wrapper.classList.add("variable-wrapper", "single-row", "vertex-count");
 
     const label = document.createElement("label");
-    label.textContent = `${info.name} (${typeInfo.label})`;
-    label.style.display = "block";
-    label.style.marginBottom = "0.25em";
+    label.classList.add("variable-label");
+    label.textContent = "Vertex count: ";
     wrapper.appendChild(label);
 
-    const value = uniformValues[info.name];
+    const input = document.createElement("input");
+    input.classList.add("variable-input");
+    input.type = "number";
+    input.step = 1;
+    input.min = 0;
+    input.max = 255;
+    input.value = vertexCount;
+
+    input.addEventListener("input", () => {
+      const parsed = parseInt(input.value);
+      if (!isNaN(parsed) && parsed > 0) {
+        vertexCount = parsed;
+        editorDiv.innerHTML = '';
+        buildVariableEditor(variableType, allSavedVariables, saved, extractedInfo, variableValues, editorDiv);
+        buildAttributeBuffers();
+      }
+    });
+    wrapper.appendChild(input);
+    editorDiv.appendChild(wrapper);
+  }
+  
+  // validate loaded things
+  for (const [name,obj] of Object.entries(saved)) if (!(obj && obj.value && Number.isInteger(obj.value.length))) {
+    console.warn(`Saved ${variableType} ${name} failed validation: `,obj);
+    delete saved[name];
+  }
+
+  let sysUniforms = [];
+
+  for (let i = 0; i < extractedInfo.length; i++) {
+    const info = extractedInfo[i];
+    console.log(info.type,info.size);
+
+    let variableName = info.name.replace(/\[0\]$/, "");
+
+    const isSys = variableName in SYS_UNIFORMS;
+    if(isSys && info.type != SYS_UNIFORMS[variableName]["type"]) {
+      throw new Error(`System ${variableType} ${variableName} must be of type ${uniformTypeMap[SYS_UNIFORMS[variableName]["type"]]["label"]}`);
+    }
+    const typeInfo = uniformTypeMap[info.type];
+    if (!typeInfo) continue; // skip unsupported types for now
+    
+    // note: gl.FLOAT_MAT2x3 means two vec3s, which in our representation are rows. So in a matrix, the first value is row group count, second is col count
+    // if theres an array of multiple matrices, the row count is row group count * number of elements in the array
+    // TODO: eventually it should be smarter about how to restore saved arrays of multidimensional shapes
+    const rowGroupCount = (typeInfo.size.length==2 ? typeInfo.size[0] : 1);
+    const arrayElemCount = info.size * (variableType == "attribute" ? vertexCount : 1);
+    let rowCount = arrayElemCount * rowGroupCount;
+    let colCount = typeInfo.size.length==2 ? typeInfo.size[1] : typeInfo.size;
+    if (colCount == 1 && rowCount > 1) {
+      colCount = rowCount;
+      rowCount = 1;
+    }
+    const valueCount = rowCount * colCount;
+
+    const defaultVal = Array(valueCount).fill(1);
+    
+    if(variableName in saved) {  
+      let savedValue = saved[variableName].maxValue ? saved[variableName].maxValue : saved[variableName].value;
+      let savedLen = saved[variableName].maxValue ? saved[variableName].maxValue.length : saved[variableName].value.length; // TODO: Make max value thing work
+      //let savedRowCount = saved[variableName].rowCount ? saved[variableName].rowCount : 1;
+      //let savedColCount = saved[variableName].colCount ? saved[variableName].colCount : savedLen;
+      //if(savedLen != defaultVal.length && savedRowCount > 1 && rowCount > 1) {
+      saved[variableName].value.length = defaultVal.length;
+      if(savedLen < defaultVal.length) saved[variableName].value.fill(defaultVal[0],savedLen);
+    }
+    else saved[variableName] = {"value":defaultVal}
+    saved[variableName].name = info.name;
+    saved[variableName].size = info.size;
+    //saved[variableName].rowCount = rowCount;
+    //saved[variableName].colCount = colCount;
+    saved[variableName].type = info.type;
+    saved[variableName].isSys = isSys;
+
+    variableValues[variableName] = saved[variableName].value;
+
+    // Create UI
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("variable-wrapper");
+    if (rowCount == 1 || colCount == 1) wrapper.classList.add("single-row");
+    else wrapper.classList.add("multirow");
+    if(isSys) wrapper.classList.add("system-variable");
+    
+    const label = document.createElement("label");
+    label.classList.add("variable-label");
+    label.textContent = `${typeInfo.label}${arrayElemCount> 1 ? `[${arrayElemCount}]`:""} ${variableName}`;
+    wrapper.appendChild(label);
+
+    const allRows = document.createElement("div");
+    allRows.classList.add("variable-contents");
+    
+    const arrow = document.createElement("span");
+    arrow.classList.add("collapse-arrow");
+    arrow.textContent = "▼";
+    if (rowCount > 1 && colCount > 1) {
+      const isCollapsed = !!saved[variableName].collapsed;
+      if(isCollapsed) {
+        arrow.textContent = "▶";
+        wrapper.classList.add("collapsed");
+      }
+      arrow.addEventListener("click", () => {
+        wrapper.classList.toggle("collapsed");
+        arrow.textContent = wrapper.classList.contains("collapsed") ? " ▶ " : " ▼ ";
+        saved[variableName].collapsed = wrapper.classList.contains("collapsed");
+        console.log(saved);
+        localStorage.setItem("shader_uniforms", JSON.stringify(allSavedVariables)); //TODO ****
+      });
+    }
+    wrapper.prepend(arrow);
+    
+    let currentRow = document.createElement("div");
+    currentRow.classList.add("variable-row");
+
+    const value = variableValues[variableName];
     if(isSys){
-      SYS_UNIFORMS[info.name]["value"] = value;
-      SYS_UNIFORMS[info.name]["input"] = []
+      SYS_UNIFORMS[variableName]["value"] = value; ///TODO ***
+      SYS_UNIFORMS[variableName]["input"] = [] ///TODO ***
     }
 
-    for (let j = 0; j < typeInfo.size; j++) {
+    for (let j = 0; j < valueCount; j++) {
       const input = document.createElement("input");
-      input.type = "number";
-      input.step = "0.01";
-      input.value = value[j];
-      input.style.width = "4em";
-      input.style.marginRight = "0.25em";
+      input.classList.add("variable-input");
+      input.type = typeInfo.type;
+      input.step = typeInfo.step;
+      if(typeInfo.min) input.min = typeInfo.min;
+      if(typeInfo.max) input.max = typeInfo.max;
+      if(input.type == "checkbox") input.checked = !!(value[j]);
+      else input.value = value[j];
 
-      const index = j;
       if(isSys){
         input.disabled = true;
-        input.style.background = "#222";
-        input.title = "Built-in system uniform (read-only)";
-        SYS_UNIFORMS[info.name]["input"][j] = input;
+        input.title = "Built-in system ${variableType} (read-only)";
+        SYS_UNIFORMS[variableName]["input"][j] = input; ///TODO ***
       }
       else{
       input.addEventListener("input", () => {
-        const parsed = typeInfo.parser(input.value);
+        const parsed = typeInfo.parser(input);
           if (!isNaN(parsed)) {
-            value[index] = parsed;
-            saved[info.name] = value;
-            uniformValues[info.name] = value;
-            localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+            value[j] = parsed;
+            saved[variableName].value = value;
+            variableValues[variableName] = value;
+            if(variableType == "attribute") buildAttributeBuffers();
+            localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables));
           }
         });
       }
-
-      wrapper.appendChild(input);
+      
+      if(rowCount > rowGroupCount && (j+1) % (colCount * rowGroupCount) == 0 ) currentRow.classList.add("group-end");
+      if(j > 1 && j % colCount == 0 && colCount != 1){
+        allRows.appendChild(currentRow); // append old row
+        currentRow = document.createElement("div"); //start new row
+        currentRow.classList.add("variable-row", "multirow");
+      }
+      currentRow.appendChild(input);
     }
-
-    uniformsDiv.appendChild(wrapper);
+    allRows.appendChild(currentRow);
+    wrapper.appendChild(allRows);
+    if(isSys) sysUniforms.push(wrapper); ///TODO ***
+    else editorDiv.appendChild(wrapper); 
   }
-
-  // Final sync
-  //localStorage.setItem("shader_uniforms", JSON.stringify(saved));
+  for (const i in sysUniforms) { editorDiv.appendChild(sysUniforms[i]); } ///TODO ***
 }
 
-
+function buildAttributeBuffers() {
+  const arrays = {};
+  for (const [name, attr] of Object.entries(attributeValues)) {
+    arrays[name] = {
+      numComponents: attr.length / vertexCount,
+      data: attr,
+    };
+  }
+  bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+}
 
 document.getElementById("compile").addEventListener("click", () => {
-  const src = document.getElementById("shader").value;
-  //const src = shaderCode;
-  createFragmentProgram(src);
+
+  // update current code
+  if (activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
+  else fragShaderCode = document.getElementById("shader").value;
+
+  // Compile with both shaders
+  createProgramFromSources(vertShaderCode, fragShaderCode);
 });
+
 
 let lastTime = 0;
 function render(time) {
@@ -447,15 +873,14 @@ function render(time) {
     const mvp = twgl.m4.multiply(vp, model);
 
     // Uniforms
-    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"time":time});}
-    Object.assign(uniforms, uniformValues); // add float uniforms
-    uniforms.u_modelViewProjection = mvp;
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"time":time,"MVP":mvp});}
+    Object.assign(uniforms, uniformValues); // add uniforms
+    //uniforms.u_modelViewProjection = mvp;
 
     gl.useProgram(currentProgramInfo.program);
     twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
     twgl.setUniforms(currentProgramInfo, uniforms);
-    twgl.drawBufferInfo(gl, bufferInfo);
-
+    twgl.drawBufferInfo(gl, bufferInfo,gl.TRIANGLE_STRIP);
     
     requestAnimationFrame(render);
     rendering = true;
@@ -468,7 +893,7 @@ function render(time) {
   }
 }
 
-createFragmentProgram(shaderCode);
+createProgramFromSources(vertShaderCode, fragShaderCode);
 
 requestAnimationFrame(render);
 </script>

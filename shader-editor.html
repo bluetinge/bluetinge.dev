@@ -326,7 +326,7 @@ const SYS_UNIFORMS = {
     if(!value) return;
     value[0] = info["time"];
     uniformValues["SYS_TIME"] = value;
-    SYS_UNIFORMS["SYS_TIME"]["input"][0].value = value[0];
+    return ()=> { SYS_UNIFORMS["SYS_TIME"]["input"][0].value = value[0]; };
   }},
   SYS_RESOLUTION:{ type: gl.FLOAT_VEC3,    size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_RESOLUTION"]["value"];
@@ -335,9 +335,11 @@ const SYS_UNIFORMS = {
     value[1] = gl.canvas.height;
     value[2] = gl.canvas.height / gl.canvas.width;
     uniformValues["SYS_RESOLUTION"] = value;
-    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][0].value = value[0];
-    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][1].value = value[1];
-    SYS_UNIFORMS["SYS_RESOLUTION"]["input"][2].value = value[2];
+    return () => {
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][0].value = value[0];
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][1].value = value[1];
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][2].value = value[2];
+    };
   }},
   SYS_MOUSE:     { type: gl.FLOAT_VEC2, size: 2, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
@@ -345,15 +347,17 @@ const SYS_UNIFORMS = {
     value[0] = lastMouseX / gl.canvas.width;
     value[1] = lastMouseY / gl.canvas.height;
     uniformValues["SYS_MOUSE"] = value;
-    SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
-    SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
+    return () => {
+      SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
+      SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
+    };
   }},
   SYS_MVP:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_MVP"]["value"];
     if(!value) return;
     value = info.MVP
     uniformValues["SYS_MVP"] = value;
-    for (const i in SYS_UNIFORMS["SYS_MVP"]["input"]) SYS_UNIFORMS["SYS_MVP"]["input"][i].value = Math.round(1000*value[i])/1000;
+    return () => { for (const i in SYS_UNIFORMS["SYS_MVP"]["input"]) SYS_UNIFORMS["SYS_MVP"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
 };
 const uniformTypeMap = {
@@ -424,7 +428,7 @@ in vec2 uv;
 out vec4 outColor;
 
 void main() {
-  outColor = vec4(uv, 0.5 + 0.5 * sin(uv.x * 10.0), 1.0);
+  outColor = vec4(uv, 0.5 + 0.5 * sin(uv.x * 10.0) - cos(SYS_TIME), 1.0);
   outColor = vec4(outColor.xyz * u_brightness, 1.0);
 }`;
 
@@ -873,7 +877,11 @@ function render(time) {
     const mvp = twgl.m4.multiply(vp, model);
 
     // Uniforms
-    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"time":time,"MVP":mvp});}
+    const callbacks = [];
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { 
+      callback = sys["update"]({"time":time,"MVP":mvp});
+      if(callback) callbacks.push(callback); //callbacks to update input UI
+    }
     Object.assign(uniforms, uniformValues); // add uniforms
     //uniforms.u_modelViewProjection = mvp;
 
@@ -884,6 +892,7 @@ function render(time) {
     
     requestAnimationFrame(render);
     rendering = true;
+    for (const i in callbacks) callbacks[i]();
   } catch (err) {
     console.error(err);
     rendering = false;

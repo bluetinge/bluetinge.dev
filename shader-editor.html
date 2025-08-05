@@ -879,7 +879,7 @@ function render(time) {
     // Uniforms
     const callbacks = [];
     for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { 
-      callback = sys["update"]({"time":time,"MVP":mvp});
+      let callback = sys["update"]({"time":time,"MVP":mvp});
       if(callback) callbacks.push(callback); //callbacks to update input UI
     }
     Object.assign(uniforms, uniformValues); // add uniforms

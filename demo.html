@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shader Editor</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    #container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    
+    canvas {
+      flex: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      min-width: 0;
+      min-height: 0;
+    }
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    #ui {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 20%;
+      max-width: 80%;
+      background: #1a1a1a;
+      border-right: 1px solid #333;
+      overflow: hidden;
+      flex: 0 0 40%; /* Start at 400px wide */
+    }
+    
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      font-family: monospace;
+      font-size: 13px;
+      background: #111;
+      color: #eee;
+      border: none;
+      outline: none;
+      padding: 0.5em;
+      overflow-y: auto;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-top: 1px solid #444;
+      cursor: pointer;
+      font-family: monospace;
+      font-weight: medium;
+    }
+    button:hover {
+      font-weight: bold;
+    }
+
+    #log {
+      font-size: 12px;
+      color: #f66;
+      background: #111;
+      padding: 0.25em 0.5em;
+      white-space: pre-wrap;
+      border-top: 1px solid #222;
+      max-height: 12em;
+      overflow-y: auto;
+    }
+    
+    .shader-tab {
+      flex: 1;
+      padding: 0.4em;
+      background: #222;
+      border: none;
+      color: #ccc;
+      font-family: monospace;
+      cursor: pointer;
+    }
+    .shader-tab.active {
+      background: #333;
+      color: white;
+      font-weight: bold;
+    }
+    
+#uniform-panel {
+    
+      overflow: auto;
+      min-height: 10%;
+      max-height: 80%;
+      display: block;
+      whiteSpace: nowrap;
+      background: #1b1b1b;
+      border-top: 1px solid #333;
+      overflow-y: auto;
+      /*flex: 0 0 30%; /* Start at 30% tall */
+    }
+    
+.variables-container {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  column-gap: 0.5em;
+  row-gap: 0em;
+  align-items: start;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 0.5em;
+}
+.variables-container.inactive{
+  display:none;
+}
+
+
+.variable-wrapper {
+  display: contents; /* Allow child elements to align directly in the grid */
+  padding: 0.5em;
+}
+
+.variable-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 8em;
+  padding: 0.15em;
+}
+
+.element-label {
+  white-space: nowrap;
+  overflow: hidden;
+  grid-column: 1;
+  padding-top: 0.2em;
+}
+
+/* If only one rowGroup, label in column 1, rowGroup in column 2 */
+.single-row .variable-label {
+  grid-column: 2;
+}
+
+/* For multi-row: label spans 2 columns, then contents span 2 below */
+.multirow .variable-label {
+  grid-column: 2 / span 3;
+}
+
+.single-row .variable-contents {
+  grid-column: 3;
+  display: contents;
+  overflow-x: visible;
+  white-space: nowrap;
+}
+
+.multirow .variable-contents {
+  grid-column: 1 / span 3;
+  display: contents;
+  overflow: visible;
+  /*grid-template-columns: repeat(auto-fit, minmax(4em, auto));*/
+}
+
+.single-row .row-group {
+  grid-column: 3;
+  display: block;
+}
+
+.single-row .variable-row { /*AKA rowGroup*/
+  display: contents;
+  overflow: visible;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 0.25em;
+}
+
+.multirow .variable-row { /*AKA rowGroup*/
+  display: flex;
+  overflow: visible;
+  flex-wrap: nowrap;
+  grid-column: 2 / span 3;
+}
+
+.vertex-count .variable-row { 
+  display: flex;
+  grid-column: 2 / span 3;
+  align-items: center;
+  padding: 0.25em;
+}
+
+.vertex-count .variable-label {
+  display: block;
+  grid-column: 2;
+}
+
+.vertex-count input {
+  display: block;
+  grid-column: 3;
+}
+
+.group-end.variable-row { /* End of a row group*/
+  padding-bottom: 0.5em;
+}
+
+
+.row-group { /*group of rows*/
+  display: contents;
+}
+    
+    .variable-input {
+      margin: 0.1em;
+      display: inline;
+      overflow: visible;
+    }
+    
+    input[type="number"] {
+      width: 4em;
+    }
+    
+    input[type="checkbox"] {
+      width: 2em;
+    }
+    
+    input:disabled {
+      background: #222;
+    }
+    
+    .collapse-arrow {
+      grid-column: 1;
+      font-family: sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 0.25em;
+      margin-left: 0.25em;
+      user-select: none;
+        padding: 0.15em;
+    }
+    
+    .single-row .collapse-arrow {
+      visibility: hidden;
+      grid-column: 1;
+    }
+    .multirow .collapse-arrow {
+      grid-column: 1;
+    }
+    
+    .collapsed .variable-contents {
+      display:none;
+    }
+
+    .divider {
+      background: #444;
+      z-index: 5;
+    }
+    .divider:hover {
+      background: #666;
+    }
+    
+    .col-divider {
+      min-width: 5px;
+      width: 5px;
+      cursor: col-resize;
+    }
+    
+    .row-divider {
+      min-height: 5px;
+      height: 5px;
+      cursor: row-resize;
+    }
+    
+    .hide { display: None; }
+    .draw-mode {padding: 0.5em; visibility: hidden;}
+    
+  </style>
+</head>
+<body>
+<div id="container">
+  <div id="ui">
+    <div id="editor-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+      <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
+        <button id="tab-vertex" class="shader-tab">Vertex Shader</button>
+        <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
+      </div>
+      <textarea id="shader" style="flex: 1; min-height: 0;"></textarea>
+      <!-- <div id="editor" style="flex: 1; min-height: 0;"></div> -->
+      <button id="compile">Compile Shader</button>
+      <div id="log"></div>
+      <div id="uniform-divider" class="divider row-divider"></div>
+      <div id="uniform-panel">
+        <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
+          <button id="tab-attributes" class="shader-tab">Attributes</button>
+          <button id="tab-uniforms" class="shader-tab">Uniforms</button>
+        </div>
+        <!-- <strong>Uniforms</strong> -->
+        <div id="all-attributes" class="variables-container"></div>
+        <div id="all-uniforms" class="variables-container"></div>
+      </div>
+    </div>
+  </div>
+  <div id="canvas-divider" class="divider col-divider"></div>
+  <canvas id="c"></canvas>
+</div>
+
+<!-- <script type="module"> -->
+  <!-- import { EditorView, basicSetup } from "https://esm.sh/@codemirror/basic-setup@0.20.2?pin=v123"; -->
+  <!-- import { EditorState } from "https://esm.sh/@codemirror/state@0.19.1?pin=v123"; -->
+  <!-- import { cpp } from "https://esm.sh/@codemirror/lang-cpp@0.20.1?pin=v123"; -->
+  <!-- import { oneDark } from "https://esm.sh/@codemirror/theme-one-dark@0.19.6?pin=v123"; -->
+
+  <!-- window.initCodeMirror = function(startValue, onChange) { -->
+    <!-- const editor = new EditorView({ -->
+      <!-- state: EditorState.create({ -->
+        <!-- doc: startValue, -->
+        <!-- extensions: [ -->
+          <!-- basicSetup, -->
+          <!-- cpp(), -->
+          <!-- oneDark, -->
+          <!-- EditorView.updateListener.of((v) => { -->
+            <!-- if (v.docChanged) { -->
+              <!-- onChange(editor.state.doc.toString()); -->
+            <!-- } -->
+          <!-- }) -->
+        <!-- ] -->
+      <!-- }), -->
+      <!-- parent: document.getElementById("editor") -->
+    <!-- }); -->
+    <!-- return editor; -->
+  <!-- }; -->
+<!-- </script> -->
+
+
+
+<script type="module">
+import * as twgl from './twgl-full.module.js';
+
+// TODOLIST
+// Variables:
+//   - Save/load with matrices in better way (store max old value)
+//   - More uniforms:
+//     - SYS_MODEL, SYS_VIEW, SYS_PERSPECTIVE, possibly camera, etc.
+//     - SYS_TIMEDELTA
+//     - Some lighting attributes..?
+//   - Figure out why non-float attributes dont work right
+//   - Editing:
+//     - Edit button (pencil) brings up drop menu with types + other symbols, clicking elsewhere dismisses it
+//       - Direct entry (of all values at once)
+//       - Paint palette: color picker/hex code 
+//       - Arrow: vector (somehow pick direction + include way to lock to normalized or unnormalized)
+//         - Eye: show/hide in scene
+//       - Position/Rotation/Scale: somehow? maybe each is separate? 
+//         - Eye: show/hide in scene
+//       - Gear: settings, like
+//         - step increment
+//         - autosave settings? history?
+//     - SYS uniform specific:
+//       - Time: pause/unpause, speed, reset
+//       - MVP: control model transform, perspective
+//       - Mouse: somehow allow this to work better (clicking on specific areas, etc)
+//   - SYStem attrbutes:
+//     - Position
+//     - UV, normals
+//   - Texture support: initially URLs probably
+//     - Noise map (SYS_RAND...?)
+//     - Normal map generation
+//   - Advanced attribute settings:
+//     - Vertex count 
+//     - Draw mode (TRIANGLE_STRIP, etc)
+//     - Indices
+//     - Instance data 
+//     - Stride, etc.
+//     - Visualization of vertices in scene, per-vertex editing
+//     - Default vertices: quad, cube, skybox
+// Performance/Code quality: 
+//   - figure out src of performance problems (system uniforms...? displaying/setting every frame, or in general...?)
+//   - show frame rate 
+//   - Separate into CSS file, HTML file, and JS module
+//   - Put into own repo / own GH pages website
+//   - Comment code
+//   - Refactor code (multiple JS files...?)
+// Code editor: 
+//   - basic integration (line numbers + C++ syntax highlighting)
+//   - GLSL syntax integration 
+//   - error squiggles
+// Shader settings:
+//   - Menu for overall settings 
+//   - Ability to save/load multiple shaders 
+//     - Create new / Duplicate existing
+//     - Sharing data:
+//       - Vert/Frag sharing
+//       - Attributes/Uniform sharing (especially relevant if they have history, etc.)
+//       - Compatibility testing
+//       - Utility function library
+//   - Ability to upload textures to texture library:
+//     - Get from external sources
+//     - Display size (limitation on how much you can upload)
+//   - Various settings: back face culling, z buffer stuff, etc
+//   - Ability to somehow view/edit more of the opengl code...? 
+//   - Menu with ability to save/load specific shaders
+//     - Name, duplication from other, etc.
+//   - History: save/load multiple versions of a shader (last X compiled, along with variables...)
+//   - Download/upload: 
+//     - Vert/frag shaders: download/upload from device
+//     - JSON file with details
+//     - Model file for vertices
+//     - Load from URL (query string)
+//     - Load from URL: remote file
+//       - Load components from URL (shaders, models, etc.)
+//       - Bypass CORS via proxy
+//     - Share as query string
+//   - Save/load data to GitHub for syncing across devices
+//   - Load/save multiple shaders, etc. in scene
+// Ease of use:
+//   - Various UI polish:
+//     - padding inside of variables pane
+//     - Vertical resize is off
+//     - Compile button pressed / released CSS
+//     - Font size, font type, etc. 
+//   - Mobile support:
+//     - Touch support
+//     - Mobile-friendly UI (font size + pane placement)
+//   - Scene view: 
+//     - Camera panning
+//     - Camera more centered (?)
+//     - Button to reset view to default
+//     - Debug visualizations (wireframe, normals, etc.?)
+//   - Print warnings in log
+//   - Move JS to its own file
+//   - Conversion between web GLSL, cpp GLSL, HLSL........ maybe thats too much 
+//   - Display SYSTEM uniforms + documentation somewhere
+
+
+const canvas = document.getElementById("c");
+const gl = canvas.getContext("webgl2");
+if (!gl) throw new Error("WebGL2 not supported");
+twgl.resizeCanvasToDisplaySize(gl.canvas);
+let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
+
+// load width
+const savedWidth = localStorage.getItem("shader_ui_width");
+if (savedWidth) {
+  document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
+}
+
+// load height
+const savedHeight = localStorage.getItem("uniforms_height");
+if (savedHeight) {
+  document.getElementById("uniform-panel").style.flexBasis = `${savedHeight}px`;
+}
+else document.getElementById("uniform-panel").style.flexBasis = `300px`;
+
+let unlockLevel = localStorage.getItem("unlockLevel");
+if (!unlockLevel) {
+  unlockLevel = 0;
+}
+if (unlockLevel < 2) {
+  // hide unlockable stuff
+  //document.getElementById("tab-uniforms").style.display = "None";
+  document.getElementById("tab-attributes").style.display = "None";
+  document.getElementById("tab-vertex").style.display = "None";
+  document.getElementById("tab-fragment").style.display = "None";
+  
+  let func = null;
+  const shad = document.getElementById("shader");
+  func = function(e) {
+    if(shad.value.toLowerCase().includes("reveal")){
+      console.log("REVEAL");
+      shad.removeEventListener("input", func);
+      
+      if(unlockLevel < 2) {
+        unlockLevel = 2;
+        //document.getElementById("tab-uniforms").style.display = "";
+        document.getElementById("tab-attributes").style.display = "";
+        document.getElementById("tab-vertex").style.display = "";
+        document.getElementById("tab-fragment").style.display = "";
+        localStorage.setItem("unlockLevel", unlockLevel);
+      }
+      
+    }
+  };
+  shad.addEventListener("input", func);
+}
+
+
+
+// uniforms
+let lastMouseX = 0; let lastMouseY = 0;
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  lastMouseX = e.clientX - rect.left;
+  lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
+});
+const DEFAULT_ATTRIBUTES = {
+  POSITION : { type: gl.FLOAT_VEC4, size: 14*4, shape: [14,1,4], arrays: [
+    [[-1.0, 1.0, 1.0, 1.0]],    // front-top-left
+    [[1.0, 1.0, 1.0, 1.0]],     // front-top-right
+    [[-1.0, -1.0, 1.0, 1.0]],   // front-bottom-left
+    [[1.0, -1.0, 1.0, 1.0]],    // front-bottom-right
+    [[1.0, -1.0, -1.0, 1.0]],   // Back-bottom-right
+    [[1.0, 1.0, 1.0, 1.0]],     // front-top-right
+    [[1.0, 1.0, -1.0, 1.0]],    // Back-top-right
+    [[-1.0, 1.0, 1.0, 1.0]],    // front-top-left
+    [[-1.0, 1.0, -1.0, 1.0]],   // Back-top-left
+    [[-1.0, -1.0, 1.0, 1.0]],   // front-bottom-left
+    [[-1.0, -1.0, -1.0, 1.0]],  // Back-bottom-left
+    [[1.0, -1.0, -1.0, 1.0]],   // Back-bottom-right
+    [[-1.0, 1.0, -1.0, 1.0]],   // Back-top-left
+    [[1.0, 1.0, -1.0, 1.0]]    // Back-top-right
+  ]}
+}
+
+const SYS_UNIFORMS = {
+  SYS_TIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_TIME"]["value"];
+    if(!value) return;
+    value[0] = info["time"];
+    uniformValues["SYS_TIME"] = value;
+    return ()=> { SYS_UNIFORMS["SYS_TIME"]["input"][0].value = value[0]; };
+  }},
+  SYS_RESOLUTION:{ type: gl.FLOAT_VEC3,    size: 3, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_RESOLUTION"]["value"];
+    if (!value) return;
+    value[0] = gl.canvas.width;
+    value[1] = gl.canvas.height;
+    value[2] = gl.canvas.height / gl.canvas.width;
+    uniformValues["SYS_RESOLUTION"] = value;
+    return () => {
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][0].value = value[0];
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][1].value = value[1];
+      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][2].value = value[2];
+    };
+  }},
+  SYS_MOUSE:     { type: gl.FLOAT_VEC2, size: 2, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
+    if(!value) return;
+    value[0] = lastMouseX / gl.canvas.width;
+    value[1] = lastMouseY / gl.canvas.height;
+    uniformValues["SYS_MOUSE"] = value;
+    return () => {
+      SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
+      SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
+    };
+  }},
+  SYS_MVP:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_MVP"]["value"];
+    if(!value) return;
+    SYS_UNIFORMS["SYS_MVP"].value = info.MVP;
+    uniformValues["SYS_MVP"] = info.MVP;
+    return () => { for (const i in SYS_UNIFORMS["SYS_MVP"]["input"]) SYS_UNIFORMS["SYS_MVP"]["input"][i].value = Math.round(1000*value[i])/1000; };
+  }},
+};
+const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
+  [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC2]:  { shape: [1,2], label: 'vec2',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC3]:  { shape: [1,3], label: 'vec3',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC4]:  { shape: [1,4], label: 'vec4',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2]:  { shape: [2,2], label: 'mat2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x3]:  { shape: [2,3], label: 'mat2x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x4]:  { shape: [2,4], label: 'mat2x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x2]:  { shape: [3,2], label: 'mat3x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3]:  { shape: [3,3], label: 'mat3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x4]:  { shape: [3,4], label: 'mat3x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x2]:  { shape: [4,2], label: 'mat4x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x3]:  { shape: [4,3], label: 'mat4x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4]:  { shape: [4,4], label: 'mat4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.INT]:         { shape: [1,1], label: 'int',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC2]:  { shape: [1,2], label: 'ivec2',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC3]:  { shape: [1,3], label: 'ivec3',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC4]:  { shape: [1,4], label: 'ivec4',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT]:{ shape: [1,1], label: 'uint',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC2]:{ shape: [1,2], label: 'uvec2',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC3]:{ shape: [1,3], label: 'uvec3',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC4]:{ shape: [1,4], label: 'uvec4',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.BOOL]:        { shape: [1,1], label: 'bool',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC2]:        { shape: [1,2], label: 'bvec2',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC3]:        { shape: [1,3], label: 'bvec3',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.BOOL_VEC4]:        { shape: [1,4], label: 'bvec4',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+};
+const uniformsDiv = document.getElementById("all-uniforms");
+const attributesDiv = document.getElementById("all-attributes");
+
+let uniformValues = {};
+let attributeValues = {};
+let vertexCount = localStorage.getItem("vertexCount") || 4;
+let drawMode = localStorage.getItem("drawMode") || "triangle_strip";
+let triangles = [[0,0,0],[0,0,0]];
+let variablesTab = "uniforms";
+
+function updateVariableTabUI(newValue) {
+  // toggle tab
+  variablesTab = newValue;
+  document.getElementById("tab-uniforms").classList.toggle("active", variablesTab === "uniforms");
+  document.getElementById("tab-attributes").classList.toggle("active", variablesTab === "attributes");
+  // show/hide
+  document.getElementById("all-uniforms").classList.toggle("inactive", variablesTab !== "uniforms");
+  document.getElementById("all-attributes").classList.toggle("inactive", variablesTab !== "attributes");
+  //localStorage.setItem("active_variable_tab",variablesTab)
+}
+
+document.getElementById("tab-uniforms").addEventListener("click", () => {
+  updateVariableTabUI("uniforms");
+});
+
+document.getElementById("tab-attributes").addEventListener("click", () => {
+  updateVariableTabUI("attributes");
+});
+
+updateVariableTabUI(variablesTab); // initial update
+
+const defaultFrag = `#version 300 es
+precision highp float;
+
+in vec2 uv;
+out vec4 outColor;
+
+void main() {
+  outColor = vec4(uv.x, uv.y, 0.0, 1.0);
+}`;
+
+const defaultVert = `#version 300 es
+
+uniform mat4 SYS_MVP;
+
+in vec2 position;
+out vec2 uv;
+
+void main() {
+  uv = position.xy * 0.5 + 0.5;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}`;
+
+/*
+const defaultFrag = `#version 300 es
+precision highp float;
+
+uniform float brightness;
+uniform float speed;
+uniform vec2 SYS_MOUSE;
+uniform vec3 SYS_RESOLUTION;
+uniform float SYS_TIME;
+
+in vec2 uv;
+out vec4 outColor;
+
+void main() {
+  outColor = vec4(uv, 0.5 + 0.5 * sin(uv.x * 10.0) - cos(SYS_TIME * speed), 1.0);
+  outColor = vec4(outColor.xyz * brightness, 1.0);
+}`;
+
+const defaultVert = `#version 300 es
+
+uniform mat4 SYS_MVP;
+
+in vec4 position;
+out vec2 uv;
+
+void main() {
+  uv = position.xy * 0.5 + 0.5;
+  gl_Position = SYS_MVP * position;
+}`;
+*/
+// shader code editors
+
+let shaderCode = localStorage.getItem("shader_code") || defaultFrag;
+let fragShaderCode = localStorage.getItem("frag_shader_code") || defaultFrag;
+let vertShaderCode = localStorage.getItem("vert_shader_code") || defaultVert;
+let activeShaderType = localStorage.getItem("active_shader_type") || "fragment"; // "vertex" or "fragment"
+
+//let editor = initCodeMirror(shaderCode, (newCode) => {
+//  shaderCode = newCode;
+//});
+document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+
+function updateTabUI(newValue) {
+  // save existing code
+  if(activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
+  else fragShaderCode = document.getElementById("shader").value;
+  // toggle tab
+  activeShaderType = newValue;
+  document.getElementById("tab-vertex").classList.toggle("active", activeShaderType === "vertex");
+  document.getElementById("tab-fragment").classList.toggle("active", activeShaderType === "fragment");
+  document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+  localStorage.setItem("active_shader_type",activeShaderType)
+}
+
+document.getElementById("tab-vertex").addEventListener("click", () => {
+  updateTabUI("vertex");
+});
+
+document.getElementById("tab-fragment").addEventListener("click", () => {
+  updateTabUI("fragment");
+});
+
+updateTabUI(activeShaderType); // initial update
+
+let currentProgramInfo = twgl.createProgramInfo(gl, [defaultVert, defaultFrag]);
+let bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+//console.log(bufferInfo)
+const uniforms = {};
+
+let yaw = 0, pitch = 0, radius = 5;
+const keys = {};
+window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+// mouse resize
+const dividerC = document.getElementById("canvas-divider");
+const dividerU = document.getElementById("uniform-divider");
+let resizingCol = false;
+let resizingUniforms = false;
+
+dividerC.addEventListener("mousedown", (e) => {
+  resizingCol = true;
+  document.body.style.cursor = "col-resize";
+  e.preventDefault(); // prevent canvas focus
+});
+dividerU.addEventListener("mousedown", (e) => {
+  resizingUniforms = true;
+  document.body.style.cursor = "row-resize";
+  e.preventDefault(); // prevent canvas focus
+});
+
+window.addEventListener("mouseup", () => {
+  resizingCol = false;
+  resizingUniforms = false;
+  document.body.style.cursor = "";
+});
+
+window.addEventListener("mousemove", (e) => {
+  if (resizingCol) {
+    const min = window.innerWidth * 0.2;
+    const max = window.innerWidth * 0.8;
+    const newWidth = Math.min(max, Math.max(min, e.clientX));
+    document.getElementById("ui").style.flexBasis = `${newWidth}px`;
+    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    localStorage.setItem("shader_ui_width", newWidth); // save
+  }
+  else if (resizingUniforms){
+    const min = 75;
+    const max = 900;
+  const uiTop = document.getElementById("ui").getBoundingClientRect().top;
+  const totalHeight = document.getElementById("ui").clientHeight;
+
+  const fromTop = e.clientY - uiTop;
+  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 20));
+    document.getElementById("uniform-panel").style.flexBasis = `${newHeight}px`;
+    localStorage.setItem("uniforms_height", newHeight); // save
+  }
+});
+
+
+// Mouse drag
+let dragging = false, lastX = 0, lastY = 0;
+canvas.addEventListener("mousedown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener("mouseup", () => dragging = false);
+window.addEventListener("mousemove", (e) => {
+  if (!dragging || resizingCol || resizingUniforms) return; // <- ignore camera drag while resizing
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  yaw -= dx * 0.005;
+  pitch += dy * 0.005;
+  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+});
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  radius *= Math.exp(e.deltaY * -0.001 * 0.5);
+  radius = Math.max(0.5, Math.min(10, radius));
+});
+
+function updateKeyboard(dt) {
+  const s = 1.5;
+  if (keys["arrowleft"]) yaw -= s * dt;
+  if (keys["arrowright"]) yaw += s * dt;
+  if (keys["arrowup"]) pitch += s * dt;
+  if (keys["arrowdown"]) pitch -= s * dt;
+  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+}
+
+// error callback for twgl
+function logError(msg, line) {
+  console.warn(msg);
+  const lines = msg.split("\n");
+  var logMsg = ""; var logall = false;
+  for (let i = 0; i < lines.length; i++) {
+    if(lines[i] == "\0") continue;
+    if(lines[i].startsWith("^^^")) logMsg += `${lines[i-2]}\n${lines[i]}\n`;
+    if(lines[i].startsWith("Error compiling")) logall = true;
+    if(logall) logMsg += `${lines[i]}\n`;
+  }
+  console.log(logMsg);
+  if (logMsg.length == 0) logMsg = msg;
+  document.getElementById("log").textContent = logMsg;
+  document.getElementById("log").style.color = "red";
+}
+
+function createProgramFromSources(vertSrc, fragSrc) {
+  try {
+    const newProgramInfo = twgl.createProgramInfo(gl, [vertSrc, fragSrc], logError);
+    if(!newProgramInfo) return; //should already be logged due to logError
+    currentProgramInfo = newProgramInfo;
+    extractVariables(currentProgramInfo.program);
+    buildAttributeBuffers();
+    console.log(uniformValues);
+    
+    if(Object.keys(uniformValues) == 0 && unlockLevel == 0) {
+      document.getElementById("uniform-panel").style.display = "None";
+    }
+    else {
+      document.getElementById("uniform-panel").style.display = "";
+      if (unlockLevel < 1) {
+        unlockLevel = 1;
+        localStorage.setItem("unlockLevel", unlockLevel);
+      }
+    }
+    
+    document.getElementById("log").textContent = "Shader compiled successfully.";
+    document.getElementById("log").style.color = "white";
+    localStorage.setItem("frag_shader_code", fragSrc); // save on success
+    localStorage.setItem("vert_shader_code", vertSrc); // save on success
+    // continue rendering if it stopped previously due to an error
+    if(!rendering) {
+      rendering = true;
+      requestAnimationFrame(render);
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById("log").textContent = err.message;
+    document.getElementById("log").style.color = "red";
+  }
+}
+
+function extractVariables(program) {
+  uniformValues = {}; // reset
+  attributeValues = {}; // reset
+  
+  // setting up system uniforms
+  for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["input"] = undefined; sys["value"] = undefined;}
+  // Not currently SYS_ATTRIBUTES but they would go here
+
+  // Extract uniforms and attributes from program
+  const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+
+  const uniformInfo = [];
+  for (let i = 0; i < numUniforms; i++) {
+    const info = gl.getActiveUniform(program, i);
+    if(info && info.name) uniformInfo.push(info); 
+    else console.warn(`Malformed uniform ${i} extracted: `, info);
+  }
+  const attributeInfo = [{name:"vertex count",type:gl.UNSIGNED_INT_VEC3, size:1}];
+  for (let i = 0; i < numAttributes; i++) {
+    const info = gl.getActiveAttrib(program, i);
+    //if(info && info.name) info.location = gl.getAttribLocation(program, info.name);
+    if(info && info.name && info.size == 1/*&& info.location*/) attributeInfo.push(info);
+    else console.warn(`Malformed attribute ${i} extracted: `, info);
+  }
+
+  // load saved values
+  const saved_variables = JSON.parse(localStorage.getItem("shader_variables") || "{}");
+  if(!saved_variables.uniforms) saved_variables.uniforms = {};
+  if(!saved_variables.attributes) saved_variables.attributes = {};
+  
+  // silly way of doing this but it works for now
+  console.log(saved_variables.attributes)
+  
+  uniformsDiv.innerHTML = ''; // clear UI
+  attributesDiv.innerHTML = ''; // clear UI
+  
+  buildVariableEditor("uniform", saved_variables, saved_variables.uniforms, uniformInfo, uniformValues, uniformsDiv);
+  buildVariableEditor("attribute", saved_variables, saved_variables.attributes, attributeInfo, attributeValues, attributesDiv);
+}
+
+function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,variableValues, editorDiv) {
+  
+  // validate loaded things
+  for (const [name,obj] of Object.entries(saved)) if (!(
+      obj && obj.arrays && obj.shape &&
+      obj.arrays.length == obj.shape[0] &&
+      obj.arrays.flat().length == obj.shape[0] * obj.shape[1] &&
+      obj.arrays.flat().flat().length == obj.shape[0] * obj.shape[1] * obj.shape[2])) {
+    console.warn(`Saved ${variableType} ${name} failed validation: `,obj);
+    
+    delete saved[name];
+  }
+  
+  if(variableType == "attribute")
+  for (const i in extractedInfo) {
+    const aName = extractedInfo[i].name;
+    if(aName == "vertex count") saved["Triangles:"] = getTriangles(drawMode);  
+    if (!saved[aName]) { // if the attribute is not already saved
+      for (const def_name in DEFAULT_ATTRIBUTES) {
+        console.log(aName,def_name);
+        if(aName.toUpperCase().search(def_name) != -1) { // and it matches a default
+          saved[aName] = DEFAULT_ATTRIBUTES[def_name]; //use the default thing
+        }
+      }
+    }
+    
+  }
+
+  let sysUniforms = [];
+
+  for (let i = 0; i < extractedInfo.length; i++) {
+    const info = extractedInfo[i];
+    //console.log(info.type,info.size);
+
+    let variableName = info.name.replace(/\[0\]$/, "");
+
+    const isSys = variableName in SYS_UNIFORMS;
+    const isVertexCount = (variableName == "vertex count");
+    if(isVertexCount) {
+      buildVertexCountEditor(allSavedVariables,saved,extractedInfo,variableValues, editorDiv);
+      //if triangle strip: continue      
+      variableName = "Triangles:";
+    }
+    if(isSys && info.type != SYS_UNIFORMS[variableName]["type"]) {
+      throw new Error(`System ${variableType} ${variableName} must be of type ${uniformTypeMap[SYS_UNIFORMS[variableName]["type"]]["label"]}`);
+    }
+    const typeInfo = uniformTypeMap[info.type];
+    if (!typeInfo) continue; // skip unsupported types for now
+    
+    // shape: always length 3. [arrayElemCount, rowGroupCount, colCount]
+    // note: gl.FLOAT_MAT2x3 means two vec3s, which in our representation are rows. So: 2 rows of 3 columns
+    const shape = [variableType == "attribute" ? (isVertexCount ? triangles.length : vertexCount) : info.size, typeInfo.shape[0], typeInfo.shape[1]]
+    const arrayElemCount = shape[0];
+    const rowGroupCount = shape[1];
+    let colCount = shape[2]; // col count is TOTAL number of columns to RENDER
+    let rowCount = arrayElemCount * rowGroupCount; // row count is TOTAL number of rows to RENDER
+    if (colCount == 1 && rowCount > 1 && rowCount <= 4) {
+      colCount = rowCount;
+      rowCount = 1;
+    }
+    const valueCount = rowCount * colCount;
+
+    const defaultVal = 1;
+    const nestedVal = Array.from({length: shape[0]}, e => Array.from({length: shape[1]}, f => Array(shape[2]).fill(defaultVal))); //unflattened
+    // nestedVal is only as big as it needs to be, savedVal holds ALL saved values
+    if(variableName in saved) {  
+      let savedVal = saved[variableName].arrays, savedShape = saved[variableName].shape;
+      let maxShape = [Math.max(shape[0],savedShape[0]), Math.max(shape[1],savedShape[1]), Math.max(shape[2],savedShape[2])];
+      for (let elem = 0; elem < maxShape[0]; elem++) {
+        if(!savedVal[elem]) savedVal[elem] = Array(maxShape[1]); //extend
+        for(let rg = 0; rg < maxShape[1]; rg++) {
+          if(!savedVal[elem][rg]) savedVal[elem][rg] = Array(maxShape[2]).fill(defaultVal); // extend
+          if(savedVal[elem][rg].length < maxShape[2]) { 
+            savedVal[elem][rg].length = maxShape[2]; //extend
+            savedVal[elem][rg].fill(defaultVal, savedShape[2], maxShape[2]) //fill new values
+          }
+          for(let c = 0; elem < shape[0] && rg < shape[1] && c < shape[2]; c++) nestedVal[elem][rg][c] = savedVal[elem][rg][c];  //copy saved values
+        }
+      }
+      saved[variableName].shape = maxShape;
+    }
+    else saved[variableName] = {"arrays":nestedVal, "shape":shape}
+    saved[variableName].name = info.name;
+    saved[variableName].size = info.size;
+    
+    //saved[variableName].rowCount = rowCount;
+    //saved[variableName].colCount = colCount;
+    saved[variableName].type = info.type;
+    saved[variableName].isSys = isSys;
+
+    variableValues[variableName] = nestedVal.flat().flat();
+
+    // Create UI
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("variable-wrapper");
+    if (isVertexCount) wrapper.id = ("indexWrapper");
+    if (isVertexCount && drawMode != "index") wrapper.classList.add("hide");
+    if (rowCount == 1) wrapper.classList.add("single-row");
+    else wrapper.classList.add("multirow");
+    if(isSys) wrapper.classList.add("system-variable");
+    
+    const label = document.createElement("label");
+    label.classList.add("variable-label");
+    label.textContent = `${typeInfo.label}${arrayElemCount> 1 ? `[${arrayElemCount}]`:""} ${variableName}`;
+    //if(isVertexCount) label.textContent = "triangle indices:";
+    wrapper.appendChild(label);
+
+    const allRows = document.createElement("div");
+    allRows.classList.add("variable-contents");
+    
+    let rowGroup = document.createElement("div");
+    rowGroup.classList.add("row-group");
+    
+    const arrow = document.createElement("span");
+    arrow.classList.add("collapse-arrow");
+    arrow.textContent = "▼";
+    if (rowCount > 1) {
+      const isCollapsed = !!saved[variableName].collapsed;
+      if(isCollapsed) {
+        arrow.textContent = "▶";
+        wrapper.classList.add("collapsed");
+      }
+      arrow.addEventListener("click", () => {
+        wrapper.classList.toggle("collapsed");
+        arrow.textContent = wrapper.classList.contains("collapsed") ? " ▶ " : " ▼ ";
+        saved[variableName].collapsed = wrapper.classList.contains("collapsed");
+        localStorage.setItem("shader_uniforms", JSON.stringify(allSavedVariables)); //TODO ****
+      });
+    }
+    wrapper.prepend(arrow);
+    
+    let currentRow = document.createElement("div");
+    currentRow.classList.add("variable-row");
+
+    const value = variableValues[variableName];
+    if(isSys){
+      SYS_UNIFORMS[variableName]["value"] = value; ///TODO ***
+      SYS_UNIFORMS[variableName]["input"] = [] ///TODO ***
+    }
+     
+    for (let j = 0; j < valueCount; j++) {
+      let c = j % shape[2];                                         // c iterates through units in columns
+      let rg = Math.floor( j / shape[2]) % shape[1];                // rg iterates through rows in row groups
+      let elem = Math.floor(j / (shape[2] * shape[1])) % shape[0];  // elem iterates through row groups in wrapper
+      
+      console.log(elem,rg,c,j)
+      
+      // Check if we are ending a row group 
+      if(c==colCount - 1 && rg == rowGroupCount - 1) {
+        currentRow.classList.add("group-end");
+        console.log("Final row of RG");
+      }
+      
+      // Check if we are starting a new row
+      if(j != 0 && c==0 ){ 
+        rowGroup.appendChild(currentRow); // append old row
+        currentRow = document.createElement("div"); //start new row
+        currentRow.classList.add("variable-row");
+         // Check if we are starting a new row group
+         if(rg == 0 && rowCount > 1) {
+          allRows.appendChild(rowGroup); // append old row group
+          rowGroup = document.createElement("div"); //start new one
+          rowGroup.classList.add("row-group"); 
+         }
+      }
+
+      // TODO: make a thing called variable-group, which is across all 3 columns, and has both the element label and the rows inside it. 
+     if(c == 0 && rg == 0 && arrayElemCount > 1 && rowCount > 1) {
+        const elemLabel = document.createElement("label");
+        elemLabel.classList.add("element-label");
+        elemLabel.textContent = `[${elem}]`;
+        rowGroup.append(elemLabel);
+      }
+      
+      const input = document.createElement("input");
+      input.classList.add("variable-input");
+      input.type = typeInfo.type;
+      input.step = typeInfo.step;
+      if(typeInfo.min) input.min = typeInfo.min;
+      if(typeInfo.max) input.max = typeInfo.max;
+      if(isVertexCount) input.max = vertexCount-1;
+      if(input.type == "checkbox") input.checked = !!(value[j]);
+      else input.value = value[j];
+
+      if(isSys){
+        input.disabled = true;
+        input.title = `Built-in system ${variableType} (read-only)`;
+        SYS_UNIFORMS[variableName]["input"][j] = input; ///TODO ***
+      }
+      else{
+      input.addEventListener("input", () => {
+        const parsed = typeInfo.parser(input);
+          if (!isNaN(parsed)) {
+            value[j] = parsed;
+            variableValues[variableName] = value;
+            saved[variableName].arrays[elem][rg][c] = parsed;
+            if(variableType == "attribute") buildAttributeBuffers();
+            localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables));
+          }
+        });
+      }
+      
+      currentRow.appendChild(input);
+    }
+    rowGroup.appendChild(currentRow);
+    console.log("Final RG appended");
+    allRows.appendChild(rowGroup);
+    wrapper.appendChild(allRows);
+    if(isSys) sysUniforms.push(wrapper); ///TODO ***
+    else editorDiv.appendChild(wrapper); 
+  }
+  for (let i in sysUniforms) { editorDiv.appendChild(sysUniforms[i]); } ///TODO ***
+}
+
+function buildAttributeBuffers() {
+  const arrays = {};
+  for (const [name, attr] of Object.entries(attributeValues)) {
+    arrays[name] = {
+      numComponents: attr.length / vertexCount,
+      data: attr,
+    };
+  }
+  bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+}
+
+document.getElementById("compile").addEventListener("click", () => {
+
+  // update current code
+  if (activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
+  else fragShaderCode = document.getElementById("shader").value;
+
+  // Compile with both shaders
+  createProgramFromSources(vertShaderCode, fragShaderCode);
+});
+
+function buildVertexCountEditor(allSavedVariables,saved,extractedInfo,variableValues, editorDiv) {
+  // Create UI
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("variable-wrapper", "vertex-count");
+
+  const vcRow = document.createElement("div");
+  vcRow.classList.add("variable-row", "single-row");
+
+  const label = document.createElement("label");
+  label.classList.add("variable-label");
+  label.textContent = "Vertex count: ";
+  vcRow.appendChild(label);
+
+  const input = document.createElement("input");
+  input.classList.add("variable-input");
+  input.type = "number";
+  input.step = 1;
+  input.min = 0;
+  input.max = 255;
+  input.value = vertexCount;
+
+  input.addEventListener("change", () => {
+    const parsed = parseInt(input.value);
+    if (!isNaN(parsed) && parsed > 0) {
+      vertexCount = parsed;
+      editorDiv.innerHTML = '';
+      buildVariableEditor("attribute", allSavedVariables, saved, extractedInfo, variableValues, editorDiv);
+      buildAttributeBuffers();
+      localStorage.setItem("vertexCount",vertexCount);
+    }
+  });
+  vcRow.appendChild(input);
+  
+  // select mode
+  const drawModeDiv = document.createElement("div");
+
+  drawModeDiv.classList.add("draw-mode");
+  const label2 = document.createElement("label");
+  //label2.classList.add("variable-label");
+  label2.textContent = " Draw mode: ";
+  drawModeDiv.appendChild(label2);
+
+  const comboBox = document.createElement("select");
+  comboBox.name = "draw-mode";
+  const opt1 = document.createElement("option");
+  opt1.value = "triangle_strip";
+  opt1.textContent = "Triangle strip";
+  const opt2 = document.createElement("option");
+  opt2.value = "index";
+  opt2.textContent = "Triangles by index";
+  comboBox.appendChild(opt1);
+  comboBox.appendChild(opt2);
+  
+  comboBox.addEventListener("change",() => {
+    const newMode = comboBox.value;
+    const indexWrapper = document.getElementById("indexWrapper");
+    if(newMode == "index") indexWrapper.classList.remove("hide");
+    if(newMode != "index") indexWrapper.classList.add("hide");
+    drawMode = newMode;
+  })
+  
+  drawModeDiv.appendChild(comboBox);
+  vcRow.appendChild(drawModeDiv)
+  wrapper.appendChild(vcRow);
+  wrapper.appendChild(vcRow);
+  /*
+  // then the index thing...
+  const indexDiv = document.createElement("div");
+  indexDiv.classList.add("variable-contents");
+  for (let i = 0; i < triangles.length; i++) {
+    const indexRow = document.createElement("div");
+    indexRow.classList.add("variable-row", "multirow", "group-end");
+    for (let j = 0; j < 3; j++) {
+      const input = document.createElement("input");
+      input.classList.add("variable-input");
+      input.value = triangles[i][j];
+      input.type = "number";
+      indexRow.append(input);
+    }
+    indexDiv.appendChild(indexRow);
+  }
+  wrapper.appendChild(indexDiv);
+  */
+  editorDiv.appendChild(wrapper);
+}
+
+// This doesn't really make much sense... Have you considered, maybe, not doing this ???
+
+function getTriangles(newMode) {
+  
+  let trianglesArray = Array(0);
+  if(newMode == "triangle_strip") {
+    for (let i = 0; i+2 < vertexCount; i++) {
+      trianglesArray.push([[i, i+1, i+2]]);
+    }
+     let triObj = {"arrays": trianglesArray, "shape": [vertexCount+2,1,3]};
+    return triObj;
+  }
+  if(newMode == "index") {
+    for (let i = 0; i+2 < vertexCount; i++) {
+      trianglesArray.push([[i, i+1, i+2]]);
+    }
+     let triObj = {"arrays": trianglesArray, "shape": [vertexCount+2,1,3]};
+    return triObj;
+  }
+}
+
+let lastTime = 0;
+function render(time) {
+  try {
+    time *= 0.001;
+    const dt = time - lastTime;
+    lastTime = time;
+
+    updateKeyboard(dt);
+    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    
+    const w = gl.drawingBufferWidth;
+    const h = gl.drawingBufferHeight;
+    
+    gl.viewport(0, 0, w, h);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+
+    const eye = [
+      radius * Math.cos(pitch) * Math.sin(yaw),
+      radius * Math.sin(pitch),
+      radius * Math.cos(pitch) * Math.cos(yaw)
+    ];
+    const target = [0, 0, 0];
+    const up = [0, 1, 0];
+
+    const proj = twgl.m4.perspective(Math.PI / 4, w / h, 0.1, 100);
+    const view = twgl.m4.lookAt(eye, target, up);
+    const vp = twgl.m4.multiply(proj, twgl.m4.inverse(view));
+    const model = twgl.m4.identity();
+    const mvp = twgl.m4.multiply(vp, model);
+
+    // Uniforms
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) {  sys["update"]({"time":time,"MVP":mvp}); }
+    Object.assign(uniforms, uniformValues); // add uniforms
+    //uniforms.u_modelViewProjection = mvp;
+
+    gl.useProgram(currentProgramInfo.program);
+    twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
+    twgl.setUniforms(currentProgramInfo, uniforms);
+    twgl.drawBufferInfo(gl, bufferInfo,gl.TRIANGLE_STRIP);
+    
+    requestAnimationFrame(render);
+    rendering = true;
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) {
+      
+      if(sys.value && sys.input) { for (const i in sys["input"]) {
+        sys["input"][i].value = Math.round(1000*sys.value[i])/1000; 
+        }
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    rendering = false;
+    document.getElementById("log").textContent = err.message;
+    document.getElementById("log").style.color = "red";
+    
+  }
+}
+
+createProgramFromSources(vertShaderCode, fragShaderCode);
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

@@ -629,27 +629,27 @@ const SYS_UNIFORMS = {
   }},
 };
 const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
-  [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_VEC2]:  { shape: [1,2], label: 'vec2',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_VEC3]:  { shape: [1,3], label: 'vec3',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_VEC4]:  { shape: [1,4], label: 'vec4',  type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT2]:  { shape: [2,2], label: 'mat2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT2x3]:  { shape: [2,3], label: 'mat2x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT2x4]:  { shape: [2,4], label: 'mat2x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT3x2]:  { shape: [3,2], label: 'mat3x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT3]:  { shape: [3,3], label: 'mat3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT3x4]:  { shape: [3,4], label: 'mat3x4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT4x2]:  { shape: [4,2], label: 'mat4x2', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT4x3]:  { shape: [4,3], label: 'mat4x3', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.FLOAT_MAT4]:  { shape: [4,4], label: 'mat4', type: 'number', step: '0.01', parser: (x) => (parseFloat(x.value)) },
-  [gl.INT]:         { shape: [1,1], label: 'int',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
-  [gl.INT_VEC2]:  { shape: [1,2], label: 'ivec2',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
-  [gl.INT_VEC3]:  { shape: [1,3], label: 'ivec3',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
-  [gl.INT_VEC4]:  { shape: [1,4], label: 'ivec4',   type: 'number', step: '1', parser: (x) => (parseInt(x.value)) },
-  [gl.UNSIGNED_INT]:{ shape: [1,1], label: 'uint',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
-  [gl.UNSIGNED_INT_VEC2]:{ shape: [1,2], label: 'uvec2',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
-  [gl.UNSIGNED_INT_VEC3]:{ shape: [1,3], label: 'uvec3',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
-  [gl.UNSIGNED_INT_VEC4]:{ shape: [1,4], label: 'uvec4',   type: 'number', step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC2]:  { shape: [1,2], label: 'vec2',  type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC3]:  { shape: [1,3], label: 'vec3',  type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_VEC4]:  { shape: [1,4], label: 'vec4',  type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2]:  { shape: [2,2], label: 'mat2', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x3]:  { shape: [2,3], label: 'mat2x3', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT2x4]:  { shape: [2,4], label: 'mat2x4', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x2]:  { shape: [3,2], label: 'mat3x2', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3]:  { shape: [3,3], label: 'mat3', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT3x4]:  { shape: [3,4], label: 'mat3x4', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x2]:  { shape: [4,2], label: 'mat4x2', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4x3]:  { shape: [4,3], label: 'mat4x3', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.FLOAT_MAT4]:  { shape: [4,4], label: 'mat4', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
+  [gl.INT]:         { shape: [1,1], label: 'int',   type: 'number', array: Int32Array, step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC2]:  { shape: [1,2], label: 'ivec2',   type: 'number', array: Int32Array, step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC3]:  { shape: [1,3], label: 'ivec3',   type: 'number', array: Int32Array, step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.INT_VEC4]:  { shape: [1,4], label: 'ivec4',   type: 'number', array: Int32Array, step: '1', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT]:{ shape: [1,1], label: 'uint',   type: 'number', array: Uint32Array, step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC2]:{ shape: [1,2], label: 'uvec2',   type: 'number', array: Uint32Array, step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC3]:{ shape: [1,3], label: 'uvec3',   type: 'number',  array: Uint32Array, step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
+  [gl.UNSIGNED_INT_VEC4]:{ shape: [1,4], label: 'uvec4',   type: 'number',  array: Uint32Array, step: '1', min: '0', parser: (x) => (parseInt(x.value)) },
   [gl.BOOL]:        { shape: [1,1], label: 'bool',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
   [gl.BOOL_VEC2]:        { shape: [1,2], label: 'bvec2',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
   [gl.BOOL_VEC3]:        { shape: [1,3], label: 'bvec3',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
@@ -1040,6 +1040,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     saved[variableName].isSys = isSys;
 
     variableValues[variableName] = nestedVal.flat().flat();
+    variableValues[variableName].type = typeInfo.array;
 
     // Create UI
     const wrapper = document.createElement("div");
@@ -1169,6 +1170,7 @@ function buildAttributeBuffers() {
     arrays[name] = {
       numComponents: attr.length / vertexCount,
       data: attr,
+      type: attr.type
     };
   }
   bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);

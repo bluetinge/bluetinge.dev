@@ -281,7 +281,78 @@
     
     .hide { display: None; }
     .draw-mode {padding: 0.5em; visibility: hidden;}
-    
+
+#canvas-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+#storage-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  width: fit-content;
+  min-width: 20%;
+  max-width: 420px
+  background: rgba(20, 20, 20, 0.5);
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  padding: 8px;
+}
+#storage-controls.editing {
+  width: var(--locked-width);
+}
+
+.filename-row{
+  display:flex;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  align-items:center;
+  gap:0.5em;
+  margin-bottom:0.5em;
+  font-size:12px;
+}
+
+.filename-label{
+  white-space:nowrap;
+  opacity:0.9;
+}
+
+.filename-display{
+  flex:1;
+  min-width:0;
+  font-family: monospace; 
+  padding:0.25em 0.4em;
+  border-radius:4px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:text;
+  font-size:12px;
+}
+
+.filename-input{
+  font-size:12px;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  font-family: monospace;
+  background:#111;
+  color:#eee;
+  border:1px solid #666;
+  padding:0.25em 0.4em;
+  border-radius:4px;
+  outline:none;
+  display:none; /* start hidden */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
   </style>
 </head>
 <body>
@@ -309,7 +380,26 @@
     </div>
   </div>
   <div id="canvas-divider" class="divider col-divider"></div>
-  <canvas id="c"></canvas>
+  <div id="canvas-container">
+    <canvas id="c"></canvas>
+    <div id="storage-controls">
+      <div class="filename-row">
+        <!-- <span class="filename-label">Filename:</span> -->
+
+        <!-- display mode -->
+        <span id="workspace-filename-display" class="filename-display" title="Click to rename"></span>
+
+        <!-- edit mode -->
+        <input id="workspace-filename-input" class="filename-input" type="text" spellcheck="false" />
+      </div>
+      <div style="display:flex; gap:0.5em;">
+        <button id="save-storage" style="flex:1;">Save</button>
+        <button id="load-storage" style="flex:1;">Load</button>
+        <button id="reset-all" style="flex:1;">New</button>
+      </div>
+      <input type="file" id="load-file" accept=".json" style="display:none" />
+    </div>
+  </div>
 </div>
 
 <!-- <script type="module"> -->
@@ -340,7 +430,7 @@
 <!-- </script> -->
 
 
-<script language="javascript" src="lz-string.js"></script>
+<!--<script language="javascript" src="lz-string.js"></script>-->
 <script type="module">
 import * as twgl from './twgl-full.module.js';
 
@@ -1421,6 +1511,339 @@ function render(time) {
 createProgramFromSources(vertShaderCode, fragShaderCode);
 
 requestAnimationFrame(render);
+
+// Save and load to file:
+
+// HELPERS / FILENAME LABEL
+
+const WORKSPACE_FILENAME_KEY = "workspace_filename";
+
+function sanitizeFilename(name) {
+  let s = (name || "").trim();
+
+  // remove path separators and characters that cause trouble on Windows/macOS
+  s = s.replace(/[\\\/:*?"<>|]/g, "_");
+
+  // don’t allow empty
+  if (!s) s = "Untitled-Shader.json";
+
+  // ensure .json extension
+  if (!s.toLowerCase().endsWith(".json")) s += ".json";
+
+  return s;
+}
+
+function getWorkspaceFilename() {
+  return localStorage.getItem(WORKSPACE_FILENAME_KEY) || "Untitled-Shader.json";
+}
+
+function setWorkspaceFilename(name) {
+  const cleaned = sanitizeFilename(name);
+  localStorage.setItem(WORKSPACE_FILENAME_KEY, cleaned);
+  return cleaned;
+}
+
+function initWorkspaceFilenameUI() {
+  const input = document.getElementById("workspace-filename");
+  if (!input) return;
+
+  // populate from storage
+  input.value = getWorkspaceFilename();
+
+  // update as user types (live)
+  input.addEventListener("input", () => {
+    // store a lightly-sanitized version, but don’t fight the user too hard while typing
+    localStorage.setItem(WORKSPACE_FILENAME_KEY, input.value.trim());
+  });
+
+  // on blur / enter, fully sanitize + normalize extension
+  const commit = () => {
+    const cleaned = setWorkspaceFilename(input.value);
+    input.value = cleaned;
+  };
+
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commit();
+      input.blur();
+    }
+  });
+}
+
+initWorkspaceFilenameUI();
+
+function initFilenameInlineEdit() {
+  const display = document.getElementById("workspace-filename-display");
+  const input = document.getElementById("workspace-filename-input");
+  if (!display || !input) return;
+
+  function refresh() {
+    const name = getWorkspaceFilename();
+    display.textContent = name;
+    input.value = name;
+  }
+
+  function startEdit() {
+    const panel = document.getElementById("storage-controls");
+
+    // lock current width so swapping span->input doesn't change layout
+    const w = panel.getBoundingClientRect().width;
+    panel.style.setProperty("--locked-width", `${w}px`);
+    panel.classList.add("editing");
+
+    input.style.display = "block";
+    display.style.display = "none";
+    input.value = getWorkspaceFilename();
+    input.focus();
+    input.select();
+  }
+
+  function unlockPanelWidth() {
+    const panel = document.getElementById("storage-controls");
+    panel.classList.remove("editing");
+    panel.style.removeProperty("--locked-width");
+  }
+
+  function commitEdit() {
+    const cleaned = setWorkspaceFilename(input.value);
+    display.textContent = cleaned;
+    input.value = cleaned;
+
+    input.style.display = "none";
+    display.style.display = "block";
+    unlockPanelWidth();
+  }
+
+  function cancelEdit() {
+    input.style.display = "none";
+    display.style.display = "block";
+    refresh();
+    unlockPanelWidth();
+  }
+
+  // Click display -> edit
+  display.addEventListener("click", startEdit);
+
+  // Commit on blur
+  input.addEventListener("blur", commitEdit);
+
+  // Commit on Enter, cancel on Escape
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      input.blur(); // triggers commitEdit
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  });
+
+  // Keep it up to date on load
+  refresh();
+
+  // Optional: expose a way to refresh after save/load changes the name
+  window.refreshWorkspaceFilenameUI = refresh;
+}
+
+initFilenameInlineEdit();
+
+
+
+// SAVE TO FILE
+
+async function saveWorkspace() {
+  // Snapshot all localStorage
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const json = JSON.stringify(data, null, 2);
+
+  // Default name comes from localStorage
+  const suggestedName = getWorkspaceFilename();
+
+  // Preferred: system Save dialog (Chromium)
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName,
+        types: [{
+          description: "JSON",
+          accept: { "application/json": [".json"] }
+        }]
+      });
+
+      const writable = await handle.createWritable();
+      await writable.write(json);
+      await writable.close();
+
+      // Update filename to what user chose
+      setWorkspaceFilename(handle.name);
+      window.refreshWorkspaceFilenameUI?.();
+      return;
+    } catch (err) {
+      if (err?.name === "AbortError") return; // user canceled
+      console.error(err);
+      alert("Save failed: " + err.message);
+      return;
+    }
+  }
+
+  // Fallback: normal download (can't know final name, so store suggested)
+  setWorkspaceFilename(suggestedName);
+  window.refreshWorkspaceFilenameUI?.();
+
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = suggestedName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("save-storage").addEventListener("click", saveWorkspace);
+
+
+// LOAD FROM FILE
+
+function validateWorkspaceJSON(text) {
+  let obj;
+  try {
+    obj = JSON.parse(text);
+  } catch (e) {
+    return { ok: false, error: "Invalid JSON (parse failed)." };
+  }
+
+  // Check for basic structural integrity
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+    return { ok: false, error: "Workspace JSON must be a JSON object (key/value map)." };
+  }
+  const keys = Object.keys(obj);
+  if (keys.length === 0) {
+    return { ok: false, error: "Workspace JSON is empty." };
+  }
+  if (keys.length > 5000) {
+    return { ok: false, error: "Workspace JSON has too many keys; refusing to load." };
+  }
+
+  // localStorage values must be strings; we can coerce, but it's nice to check
+  for (const k of keys) {
+    const v = obj[k];
+    if (typeof k !== "string") {
+      return { ok: false, error: "Workspace JSON contains a non-string key." };
+    }
+    if (typeof v !== "string") {
+      // Allow coercion, but fail if it's something huge/complex
+      if (v && typeof v === "object") {
+        return { ok: false, error: `Value for key "${k}" must be a string (found object/array).` };
+      }
+    }
+  }
+
+  return { ok: true, data: obj };
+}
+
+function restoreWorkspaceFromObject(dataObj) {
+  // optional: clear first
+  localStorage.clear();
+
+  for (const [k, v] of Object.entries(dataObj)) {
+    localStorage.setItem(k, String(v));
+  }
+}
+
+async function loadWorkspace() {
+  // Preferred: system Open dialog (Chromium)
+  if (window.showOpenFilePicker) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [{
+          description: "JSON",
+          accept: { "application/json": [".json"] }
+        }]
+      });
+
+      const file = await handle.getFile();
+      const text = await file.text();
+      const result = validateWorkspaceJSON(text);
+      if (!result.ok) {
+        alert("Load aborted: " + result.error);
+        return;
+      }
+      restoreWorkspaceFromObject(result.data);
+
+      // Override filename with loaded file name
+      setWorkspaceFilename(file.name);
+
+      location.reload();
+      return;
+    } catch (err) {
+      if (err?.name === "AbortError") return; // user canceled
+      console.error(err);
+      alert("Load failed: " + err.message);
+      return;
+    }
+  }
+
+  // Fallback: use hidden <input type="file">
+  document.getElementById("load-file").click();
+}
+
+document.getElementById("load-storage").addEventListener("click", loadWorkspace);
+
+const fileInput = document.getElementById("load-file");
+fileInput.addEventListener("change", async () => {
+  if (!fileInput.files?.length) return;
+
+  const file = fileInput.files[0];
+  try {
+    const text = await file.text();
+    const result = validateWorkspaceJSON(text);
+    if (!result.ok) {
+      alert("Load aborted: " + result.error);
+      return;
+    }
+    restoreWorkspaceFromObject(obj);
+
+    // Override filename with loaded file name
+    setWorkspaceFilename(file.name);
+
+    location.reload();
+  } catch (err) {
+    console.error(err);
+    alert("Load failed: " + err.message);
+  } finally {
+    fileInput.value = ""; // allow selecting same file again
+  }
+});
+
+
+// RESET / NEW 
+
+async function newWorkspace() {
+  const isConfirmed = confirm("Discard all data and reset workspace?");
+  if (isConfirmed) {
+    // Code to execute if OK is clicked
+    console.log("User confirmed.");
+    localStorage.clear();
+    location.reload();
+  } else {
+    // Code to execute if Cancel is clicked
+    console.log("User cancelled.");
+  }
+}
+
+document.getElementById("reset-all").addEventListener("click", newWorkspace);
+
+
+
+
+
 </script>
 </body>
 </html>

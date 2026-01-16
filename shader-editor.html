@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"> -->
   <title>Shader Editor</title>
   <style>
     html, body {
@@ -262,6 +263,7 @@
     .divider {
       background: #444;
       z-index: 5;
+      touch-action: none;
     }
     .divider:hover {
       background: #666;
@@ -278,6 +280,22 @@
       height: 5px;
       cursor: row-resize;
     }
+    
+@media (pointer: coarse) {
+
+    .col-divider {
+      min-width: 14px;
+      width: 14px;
+      cursor: col-resize;
+    }
+    
+    .row-divider {
+      min-height: 14px;
+      height: 14px;
+      cursor: row-resize;
+    }
+
+}
     
     .hide { display: None; }
     .draw-mode {padding: 0.5em; visibility: hidden;}
@@ -548,7 +566,7 @@ const savedHeight = localStorage.getItem("uniforms_height");
 if (savedHeight) {
   document.getElementById("uniform-panel").style.flexBasis = `${savedHeight}px`;
 }
-else document.getElementById("uniform-panel").style.flexBasis = `300px`;
+else document.getElementById("uniform-panel").style.flexBasis = `${Math.round(window.innerHeight * 0.4)}px`; // about 278..?
 
 let unlockLevel = localStorage.getItem("unlockLevel");
 if (!unlockLevel) {
@@ -586,7 +604,7 @@ if (teachingMode && unlockLevel < 2) {
 
 // uniforms
 let lastMouseX = 0; let lastMouseY = 0;
-canvas.addEventListener("mousemove", (e) => {
+canvas.addEventListener("pointermove", (e) => {
   const rect = canvas.getBoundingClientRect();
   lastMouseX = e.clientX - rect.left;
   lastMouseY = gl.canvas.height - (e.clientY - rect.top); // flip Y
@@ -611,6 +629,13 @@ const DEFAULT_ATTRIBUTES = {
 }
 
 const SYS_UNIFORMS = {
+  SYS_RAND:      { type: gl.FLOAT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_RAND"]["value"];
+    if(!value) return;
+    value[0] = Math.random();
+    uniformValues["SYS_RAND"] = value;
+    return ()=> { SYS_UNIFORMS["SYS_RAND"]["input"][0].value = value[0]; };
+  }},
   SYS_TIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
     let value = SYS_UNIFORMS["SYS_TIME"]["value"];
     if(!value) return;
@@ -788,11 +813,13 @@ void main() {
 }` : `#version 300 es
 precision highp float;
 
+//uniform vec2 SYS_MOUSE;
+//uniform float SYS_RAND;
+//uniform vec2 SYS_RESOLUTION;
+uniform float SYS_TIME;
+
 uniform float brightness;
 uniform float speed;
-uniform vec2 SYS_MOUSE;
-uniform vec2 SYS_RESOLUTION;
-uniform float SYS_TIME;
 
 in vec2 uv;
 out vec4 outColor;
@@ -817,6 +844,15 @@ void main() {
 precision highp float;
 
 uniform mat4 SYS_MVP;
+//uniform mat4 SYS_M;
+//uniform mat4 SYS_V;
+//uniform mat4 SYS_P;
+//uniform mat4 SYS_M_INV;
+//uniform mat4 SYS_V_INV;
+//uniform mat4 SYS_P_INV;
+//uniform vec3 SYS_CAM_FWD;
+//uniform vec3 SYS_CAM_UP;
+//uniform vec3 SYS_CAM_RIGHT;
 
 in vec4 position;
 out vec2 uv;
@@ -876,40 +912,40 @@ const dividerU = document.getElementById("uniform-divider");
 let resizingCol = false;
 let resizingUniforms = false;
 
-dividerC.addEventListener("mousedown", (e) => {
+dividerC.addEventListener("pointerdown", (e) => {
   resizingCol = true;
   document.body.style.cursor = "col-resize";
   e.preventDefault(); // prevent canvas focus
 });
-dividerU.addEventListener("mousedown", (e) => {
+dividerU.addEventListener("pointerdown", (e) => {
   resizingUniforms = true;
   document.body.style.cursor = "row-resize";
   e.preventDefault(); // prevent canvas focus
 });
 
-window.addEventListener("mouseup", () => {
+window.addEventListener("pointerup", () => {
   resizingCol = false;
   resizingUniforms = false;
   document.body.style.cursor = "";
 });
 
-window.addEventListener("mousemove", (e) => {
+window.addEventListener("pointermove", (e) => {
   if (resizingCol) {
     const min = window.innerWidth * 0.2;
     const max = window.innerWidth * 0.8;
-    const newWidth = Math.min(max, Math.max(min, e.clientX));
+    const newWidth = Math.min(max, Math.max(min, e.clientX - 3)); //3: slight buffer to feel like center
     document.getElementById("ui").style.flexBasis = `${newWidth}px`;
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     localStorage.setItem("shader_ui_width", newWidth); // save
   }
   else if (resizingUniforms){
-    const min = 75;
-    const max = 900;
+    const min = window.innerHeight * 0.1; // 75; //ish
+    const max = window.innerHeight * 0.8; //900; //ish
   const uiTop = document.getElementById("ui").getBoundingClientRect().top;
   const totalHeight = document.getElementById("ui").clientHeight;
 
   const fromTop = e.clientY - uiTop;
-  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 20));
+  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 5)); //5: slight buffer to feel like center
     document.getElementById("uniform-panel").style.flexBasis = `${newHeight}px`;
     localStorage.setItem("uniforms_height", newHeight); // save
   }
@@ -918,9 +954,9 @@ window.addEventListener("mousemove", (e) => {
 
 // Mouse drag
 let dragging = false, lastX = 0, lastY = 0;
-canvas.addEventListener("mousedown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
-window.addEventListener("mouseup", () => dragging = false);
-window.addEventListener("mousemove", (e) => {
+canvas.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener("pointerup", () => dragging = false);
+window.addEventListener("pointermove", (e) => {
   if (!dragging || resizingCol || resizingUniforms) return; // <- ignore camera drag while resizing
   const dx = e.clientX - lastX, dy = e.clientY - lastY;
   lastX = e.clientX; lastY = e.clientY;

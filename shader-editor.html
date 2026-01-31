@@ -1241,16 +1241,30 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     const typeInfo = uniformTypeMap[info.type];
     if (!typeInfo) continue; // skip unsupported types for now
     
-    // shape: always length 3. [arrayElemCount, rowGroupCount, colCount]
+    // shape: always length 3. [arrayElemCount, rowCountPerGroup, colCount]
     // note: gl.FLOAT_MAT2x3 means two vec3s, which in our representation are rows. So: 2 rows of 3 columns
     const shape = [variableType == "attribute" ? (isVertexCount ? triangles.length : vertexCount) : info.size, typeInfo.shape[0], typeInfo.shape[1]]
     const arrayElemCount = shape[0];
-    const rowGroupCount = shape[1];
+    let rowGroupCount = shape[0];
+    let rowCountPerGroup = shape[1]; // i.e., rows per row group
     let colCount = shape[2]; // col count is TOTAL number of columns to RENDER
-    let rowCount = arrayElemCount * rowGroupCount; // row count is TOTAL number of rows to RENDER
-    if (colCount == 1 && rowCount > 1 && rowCount <= 4) {
-      colCount = rowCount;
-      rowCount = 1;
+    let rowCount = rowGroupCount * rowCountPerGroup; // row count is TOTAL number of rows to RENDER (across rows and row groups)
+    if (colCount == 1 && rowCountPerGroup == 1 && rowCount > 1){
+      if (rowCount <= 4) { // compress multiple rows into one if less than 4 total
+        colCount = rowCount;
+        rowCount = 1;
+      }
+      else{ // try some other arrangements
+        const toTry = rowCount >= 30 ? [Math.floor(Math.sqrt(rowCount)), 10, 8, 5, 4, 9, 7, 6, 3, 2] : (rowCount >= 14 ? [5, 4, 6, 3, 2] : [5, 4, 3]);
+        for (const newColCount of toTry) {
+          if (newColCount < rowCount && rowCount % newColCount == 0) {
+            colCount = newColCount;
+            rowCount = rowCount / newColCount;
+            rowGroupCount = rowCount;
+            break;
+          }
+        }
+      }
     }
     const valueCount = rowCount * colCount;
 
@@ -1334,14 +1348,18 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     }
      
     for (let j = 0; j < valueCount; j++) {
-      let c = j % shape[2];                                         // c iterates through units in columns
-      let rg = Math.floor( j / shape[2]) % shape[1];                // rg iterates through rows in row groups
-      let elem = Math.floor(j / (shape[2] * shape[1])) % shape[0];  // elem iterates through row groups in wrapper
+      let c = j % colCount;                                         // c iterates through units in columns
+      let rg = Math.floor( j / colCount) % rowCountPerGroup;                // rg iterates through rows in row groups
+      let elem = Math.floor(j / (colCount * rowCountPerGroup)) % rowGroupCount;  // elem iterates through row groups in wrapper
+      
+      let cVal = j % shape[2];                                         // c iterates through units in columns
+      let rgVal = Math.floor( j / shape[2]) % shape[1];                // rg iterates through rows in row groups
+      let elemVal = Math.floor(j / (shape[2] * shape[1])) % shape[0];  // elem iterates through row groups in wrapper
       
       console.log(elem,rg,c,j)
       
       // Check if we are ending a row group 
-      if(c==colCount - 1 && rg == rowGroupCount - 1) {
+      if(c==colCount - 1 && rg == rowCountPerGroup - 1) {
         currentRow.classList.add("group-end");
         console.log("Final row of RG");
       }
@@ -1363,7 +1381,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
      if(c == 0 && rg == 0 && arrayElemCount > 1 && rowCount > 1) {
         const elemLabel = document.createElement("label");
         elemLabel.classList.add("element-label");
-        elemLabel.textContent = `[${elem}]`;
+        elemLabel.textContent = `[${elemVal}]`;
         rowGroup.append(elemLabel);
       }
       
@@ -1388,7 +1406,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
           if (!isNaN(parsed)) {
             value[j] = parsed;
             variableValues[variableName] = value;
-            saved[variableName].arrays[elem][rg][c] = parsed;
+            saved[variableName].arrays[elemVal][rgVal][cVal] = parsed;
             if(variableType == "attribute") buildAttributeBuffers();
             localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables));
           }

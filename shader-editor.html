@@ -641,7 +641,6 @@ const SYS_UNIFORMS = {
     value[0] = info["DT"];
     console.log(value[0]);
     uniformValues["SYS_DELTATIME"] = value;
-    return ()=> { SYS_UNIFORMS["SYS_DELTATIME"]["input"][0].value = "a0"; };
   }, display: (v)=>{return Math.round(10000*v)/10000;}
   },
   SYS_RESOLUTION:{ type: gl.FLOAT_VEC2,    size: 2, update: (info)=>{
@@ -651,11 +650,6 @@ const SYS_UNIFORMS = {
     value[1] = gl.canvas.height;
     //value[2] = gl.canvas.height / gl.canvas.width;
     uniformValues["SYS_RESOLUTION"] = value;
-    return () => {
-      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][0].value = value[0];
-      SYS_UNIFORMS["SYS_RESOLUTION"]["input"][1].value = value[1];
-      //SYS_UNIFORMS["SYS_RESOLUTION"]["input"][2].value = value[2];
-    };
   }},
   SYS_MOUSE:     { type: gl.FLOAT_VEC4, size: 4, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_MOUSE"]["value"];
@@ -665,35 +659,30 @@ const SYS_UNIFORMS = {
     value[2] = mouseClickUniformX / gl.canvas.width;
     value[3] = mouseClickUniformY / gl.canvas.height;
     uniformValues["SYS_MOUSE"] = value;
-    return () => { for (const i in SYS_UNIFORMS["SYS_MOUSE"]["input"]) SYS_UNIFORMS["SYS_MOUSE"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_MVP:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_MVP"]["value"];
     if(!value) return;
     SYS_UNIFORMS["SYS_MVP"].value = info.MVP;
     uniformValues["SYS_MVP"] = info.MVP;
-    return () => { for (const i in SYS_UNIFORMS["SYS_MVP"]["input"]) SYS_UNIFORMS["SYS_MVP"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_M:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_M"]["value"];
     if(!value) return;
     SYS_UNIFORMS["SYS_M"].value = info.M;
     uniformValues["SYS_M"] = info.M;
-    return () => { for (const i in SYS_UNIFORMS["SYS_M"]["input"]) SYS_UNIFORMS["SYS_M"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_V:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_V"]["value"];
     if(!value) return;
     SYS_UNIFORMS["SYS_V"].value = info.V;
     uniformValues["SYS_V"] = info.V;
-    return () => { for (const i in SYS_UNIFORMS["SYS_V"]["input"]) SYS_UNIFORMS["SYS_V"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_P:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_P"]["value"];
     if(!value) return;
     SYS_UNIFORMS["SYS_P"].value = info.P;
     uniformValues["SYS_P"] = info.P;
-    return () => { for (const i in SYS_UNIFORMS["SYS_P"]["input"]) SYS_UNIFORMS["SYS_P"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_M_INV:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_M_INV"]["value"];
@@ -701,14 +690,12 @@ const SYS_UNIFORMS = {
     const newVal = twgl.m4.inverse(info.M);
     SYS_UNIFORMS["SYS_M_INV"].value = newVal;
     uniformValues["SYS_M_INV"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_M_INV"]["input"]) SYS_UNIFORMS["SYS_M_INV"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_V_INV:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_V_INV"]["value"];
     if(!value) return;
     SYS_UNIFORMS["SYS_V_INV"].value = info.C;
     uniformValues["SYS_V_INV"] = info.C;
-    return () => { for (const i in SYS_UNIFORMS["SYS_V_INV"]["input"]) SYS_UNIFORMS["SYS_V_INV"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_P_INV:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_P_INV"]["value"];
@@ -716,7 +703,6 @@ const SYS_UNIFORMS = {
     const newVal = twgl.m4.inverse(info.P);
     SYS_UNIFORMS["SYS_P_INV"].value = newVal;
     uniformValues["SYS_P_INV"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_P_INV"]["input"]) SYS_UNIFORMS["SYS_P_INV"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_CAM_RIGHT: { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_CAM_RIGHT"]["value"];
@@ -724,7 +710,6 @@ const SYS_UNIFORMS = {
     const newVal = twgl.v3.normalize([info.C[0], info.C[1], info.C[2]]);
     SYS_UNIFORMS["SYS_CAM_RIGHT"].value = newVal;
     uniformValues["SYS_CAM_RIGHT"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_CAM_RIGHT"]["input"]) SYS_UNIFORMS["SYS_CAM_RIGHT"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_CAM_UP:    { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_CAM_UP"]["value"];
@@ -732,7 +717,6 @@ const SYS_UNIFORMS = {
     const newVal = twgl.v3.normalize([info.C[4], info.C[5], info.C[6]]);
     SYS_UNIFORMS["SYS_CAM_UP"].value = newVal;
     uniformValues["SYS_CAM_UP"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_CAM_UP"]["input"]) SYS_UNIFORMS["SYS_CAM_UP"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_CAM_FWD:   { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_CAM_FWD"]["value"];
@@ -740,7 +724,6 @@ const SYS_UNIFORMS = {
     const newVal = twgl.v3.normalize([info.C[8], info.C[9], info.C[10]]);
     SYS_UNIFORMS["SYS_CAM_FWD"].value = newVal;
     uniformValues["SYS_CAM_FWD"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_CAM_FWD"]["input"]) SYS_UNIFORMS["SYS_CAM_FWD"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_CAM_POS:   { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_CAM_POS"]["value"];
@@ -748,7 +731,6 @@ const SYS_UNIFORMS = {
     const newVal = [info.C[12], info.C[13], info.C[14]];
     SYS_UNIFORMS["SYS_CAM_POS"].value = newVal;
     uniformValues["SYS_CAM_POS"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_CAM_POS"]["input"]) SYS_UNIFORMS["SYS_CAM_POS"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_LIGHT_TRANSFORM:   { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["value"];
@@ -756,7 +738,6 @@ const SYS_UNIFORMS = {
     const newVal = info.L;
     SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"].value = newVal;
     uniformValues["SYS_LIGHT_TRANSFORM"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["input"]) SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_LIGHT_POS:   { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_LIGHT_POS"]["value"];
@@ -764,7 +745,6 @@ const SYS_UNIFORMS = {
     const newVal = [info.L[12], info.L[13], info.L[14]];
     SYS_UNIFORMS["SYS_LIGHT_POS"].value = newVal;
     uniformValues["SYS_LIGHT_POS"] = newVal;
-    return () => { for (const i in SYS_UNIFORMS["SYS_LIGHT_POS"]["input"]) SYS_UNIFORMS["SYS_LIGHT_POS"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
 };
 const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4

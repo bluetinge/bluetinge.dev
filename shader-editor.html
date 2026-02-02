@@ -897,7 +897,8 @@ let bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
 //console.log(bufferInfo)
 const uniforms = {};
 
-let yaw = 0, pitch = 0, radius = 5;
+let camYaw = 0, camPitch = 0, radius = 5;
+let modelYaw = 0, modelPitch = 0, modelX = 0, modelZ = 0;
 
 // mouse resize
 const dividerC = document.getElementById("canvas-divider");
@@ -946,7 +947,7 @@ window.addEventListener("pointermove", (e) => {
 
 // Manipulate camera: mouse or pointer
 
-let draggingMouse = false;
+let draggingMouse = false, rightMouseHeld = false;
 let lastMouseX = 0, lastMouseY = 0;
 let mouseHoverUniformX = 0, mouseHoverUniformY = 0, mouseClickUniformX = 0, mouseClickUniformY = 0;
 
@@ -955,12 +956,17 @@ let pinchStartDist = 0;
 let pinchStartRadius = 0;
 let lastTouchMidX = 0, lastTouchMidY = 0;
 
-function clampPitch() {
-  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+function clampPitch(pitch_) {
+  return Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch_));
 }
 function canControlCamera() {
   return !resizingCol && !resizingUniforms;
 }
+
+canvas.addEventListener('contextmenu', function (e) {
+  if (!e.ctrlKey && !e.metaKey) 
+    event.preventDefault(); // Prevents the default browser context menu from appearing
+});
 
 canvas.addEventListener("pointerdown", (e) => {
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
@@ -969,6 +975,7 @@ canvas.addEventListener("pointerdown", (e) => {
   if (e.pointerType === "mouse") {
     if (!canControlCamera()) return;
     draggingMouse = true;
+    if (e.button == 2) rightMouseHeld = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
     canvas.setPointerCapture(e.pointerId);
@@ -1006,9 +1013,27 @@ canvas.addEventListener("pointermove", (e) => {
     const dy = e.clientY - lastMouseY;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
-    yaw -= dx * 0.005;
-    pitch += dy * 0.005;
-    clampPitch();
+    if(e.shiftKey) { //on shift: rotate model
+      if(rightMouseHeld){// shift+right: yaw
+         modelYaw += dx * 0.005;
+      }
+      else { // shift+left: move pitch
+        modelPitch += dy * 0.005;
+        modelPitch = clampPitch(modelPitch);
+      }
+    }
+    else {
+      // if right click: move SYS_M instead
+      if(rightMouseHeld) {
+        modelX = Math.min(Math.max(modelX + dx * 0.01, -5),5);
+        modelZ = Math.min(Math.max(modelZ + dy * 0.01, -5),5);
+      }
+      else{
+        camYaw -= dx * 0.005;
+        camPitch += dy * 0.005;
+        camPitch = clampPitch(camPitch);
+      }
+    }
     e.preventDefault();
     return;
   }
@@ -1048,9 +1073,9 @@ canvas.addEventListener("pointermove", (e) => {
   lastTouchMidX = midX;
   lastTouchMidY = midY;
 
-  yaw -= mdx * 0.005;
-  pitch += mdy * 0.005;
-  clampPitch();
+  camYaw -= mdx * 0.005;
+  camPitch += mdy * 0.005;
+  camPitch = clampPitch(camPitch);
 }, { passive: false }); // allow preventDefault
 
 canvas.addEventListener("pointerup", (e) => {
@@ -1058,6 +1083,7 @@ canvas.addEventListener("pointerup", (e) => {
 
   if (e.pointerType === "mouse") {
     draggingMouse = false;
+    rightMouseHeld = false;
   }
 
   // reset pinch state if fewer than 2 touches remain
@@ -1089,11 +1115,11 @@ window.addEventListener("keyup", e => keysPressed[e.key.toLowerCase()] = false);
 
 function updateKeyboard(dt) {
   const s = 1.5;
-  if (keysPressed["arrowleft"]) yaw -= s * dt;
-  if (keysPressed["arrowright"]) yaw += s * dt;
-  if (keysPressed["arrowup"]) pitch += s * dt;
-  if (keysPressed["arrowdown"]) pitch -= s * dt;
-  pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, pitch));
+  if (keysPressed["arrowleft"]) camYaw -= s * dt;
+  if (keysPressed["arrowright"]) camYaw += s * dt;
+  if (keysPressed["arrowup"]) camPitch += s * dt;
+  if (keysPressed["arrowdown"]) camPitch -= s * dt;
+  camPitch = clampPitch(camPitch);
 }
 
 // error callback for twgl
@@ -1572,14 +1598,14 @@ function render(time) {
     gl.enable(gl.DEPTH_TEST);
 
     const eye = [
-      radius * Math.cos(pitch) * Math.sin(yaw),
-      radius * Math.sin(pitch),
-      radius * Math.cos(pitch) * Math.cos(yaw)
+      radius * Math.cos(camPitch) * Math.sin(camYaw),
+      radius * Math.sin(camPitch),
+      radius * Math.cos(camPitch) * Math.cos(camYaw)
     ];
     const target = [0, 0, 0];
     const up = [0, 1, 0];
 
-    const model = twgl.m4.identity();
+    const model = twgl.m4.translate(twgl.m4.rotateX(twgl.m4.rotationY(modelYaw), modelPitch), [modelX, 0.0, modelZ]); //twgl.m4.identity();
     const cam = twgl.m4.lookAt(eye, target, up);
     const view = twgl.m4.inverse(cam);
     const proj = twgl.m4.perspective(Math.PI / 4, w / h, 0.1, 100);

@@ -626,15 +626,24 @@ const SYS_UNIFORMS = {
     if(!value) return;
     value[0] = Math.random();
     uniformValues["SYS_RAND"] = value;
-    return ()=> { SYS_UNIFORMS["SYS_RAND"]["input"][0].value = value[0]; };
-  }},
+  }, display: (v)=>{return v;}
+  },
   SYS_TIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
     let value = SYS_UNIFORMS["SYS_TIME"]["value"];
     if(!value) return;
-    value[0] = info["time"];
+    value[0] = info["T"];
     uniformValues["SYS_TIME"] = value;
-    return ()=> { SYS_UNIFORMS["SYS_TIME"]["input"][0].value = value[0]; };
-  }},
+  }, display: (v)=>{return Math.round(100*v)/100;}
+  },
+  SYS_DELTATIME:      { type: gl.FLOAT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_DELTATIME"]["value"];
+    if(!value) return;
+    value[0] = info["DT"];
+    console.log(value[0]);
+    uniformValues["SYS_DELTATIME"] = value;
+    return ()=> { SYS_UNIFORMS["SYS_DELTATIME"]["input"][0].value = "a0"; };
+  }, display: (v)=>{return Math.round(10000*v)/10000;}
+  },
   SYS_RESOLUTION:{ type: gl.FLOAT_VEC2,    size: 2, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_RESOLUTION"]["value"];
     if (!value) return;
@@ -656,12 +665,7 @@ const SYS_UNIFORMS = {
     value[2] = mouseClickUniformX / gl.canvas.width;
     value[3] = mouseClickUniformY / gl.canvas.height;
     uniformValues["SYS_MOUSE"] = value;
-    return () => {
-      SYS_UNIFORMS["SYS_MOUSE"]["input"][0].value = value[0];
-      SYS_UNIFORMS["SYS_MOUSE"]["input"][1].value = value[1];
-      SYS_UNIFORMS["SYS_MOUSE"]["input"][2].value = value[2];
-      SYS_UNIFORMS["SYS_MOUSE"]["input"][3].value = value[3];
-    };
+    return () => { for (const i in SYS_UNIFORMS["SYS_MOUSE"]["input"]) SYS_UNIFORMS["SYS_MOUSE"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
   SYS_MVP:     { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
     let value = SYS_UNIFORMS["SYS_MVP"]["value"];
@@ -738,6 +742,30 @@ const SYS_UNIFORMS = {
     uniformValues["SYS_CAM_FWD"] = newVal;
     return () => { for (const i in SYS_UNIFORMS["SYS_CAM_FWD"]["input"]) SYS_UNIFORMS["SYS_CAM_FWD"]["input"][i].value = Math.round(1000*value[i])/1000; };
   }},
+  SYS_CAM_POS:   { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_CAM_POS"]["value"];
+    if(!value) return;
+    const newVal = [info.C[12], info.C[13], info.C[14]];
+    SYS_UNIFORMS["SYS_CAM_POS"].value = newVal;
+    uniformValues["SYS_CAM_POS"] = newVal;
+    return () => { for (const i in SYS_UNIFORMS["SYS_CAM_POS"]["input"]) SYS_UNIFORMS["SYS_CAM_POS"]["input"][i].value = Math.round(1000*value[i])/1000; };
+  }},
+  SYS_LIGHT_TRANSFORM:   { type: gl.FLOAT_MAT4, size: 16, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["value"];
+    if(!value) return;
+    const newVal = info.L;
+    SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"].value = newVal;
+    uniformValues["SYS_LIGHT_TRANSFORM"] = newVal;
+    return () => { for (const i in SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["input"]) SYS_UNIFORMS["SYS_LIGHT_TRANSFORM"]["input"][i].value = Math.round(1000*value[i])/1000; };
+  }},
+  SYS_LIGHT_POS:   { type: gl.FLOAT_VEC3, size: 3, update: (info)=>{
+    let value = SYS_UNIFORMS["SYS_LIGHT_POS"]["value"];
+    if(!value) return;
+    const newVal = [info.L[12], info.L[13], info.L[14]];
+    SYS_UNIFORMS["SYS_LIGHT_POS"].value = newVal;
+    uniformValues["SYS_LIGHT_POS"] = newVal;
+    return () => { for (const i in SYS_UNIFORMS["SYS_LIGHT_POS"]["input"]) SYS_UNIFORMS["SYS_LIGHT_POS"]["input"][i].value = Math.round(1000*value[i])/1000; };
+  }},
 };
 const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
   [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
@@ -812,6 +840,7 @@ precision highp float;
 //uniform vec4 SYS_MOUSE;
 //uniform float SYS_RAND;
 //uniform vec2 SYS_RESOLUTION;
+//uniform float SYS_DELTATIME;
 uniform float SYS_TIME;
 
 uniform float brightness;
@@ -849,6 +878,9 @@ uniform mat4 SYS_MVP;
 //uniform vec3 SYS_CAM_FWD;
 //uniform vec3 SYS_CAM_UP;
 //uniform vec3 SYS_CAM_RIGHT;
+//uniform vec3 SYS_CAM_POS;
+//uniform mat4 SYS_LIGHT_TRANSFORM;
+//uniform vec3 SYS_LIGHT_POS;
 
 in vec4 position;
 out vec2 uv;
@@ -897,8 +929,10 @@ let bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
 //console.log(bufferInfo)
 const uniforms = {};
 
-let camYaw = 0, camPitch = 0, radius = 5;
-let modelYaw = 0, modelPitch = 0, modelX = 0, modelZ = 0;
+let timeStart = undefined, lastTime = 0;
+let camYaw = 0, camPitch = 0, camRadius = 5;
+let modelYaw = 0, modelPitch = 0, modelX = 0, modelZ = 0, modelMax = 10;
+let lightYaw = 0.8, lightPitch = 0.8, lightRadius = 5;
 
 // mouse resize
 const dividerC = document.getElementById("canvas-divider");
@@ -947,7 +981,7 @@ window.addEventListener("pointermove", (e) => {
 
 // Manipulate camera: mouse or pointer
 
-let draggingMouse = false, rightMouseHeld = false;
+let draggingMouse = false, middleMouseHeld = false, rightMouseHeld = false;
 let lastMouseX = 0, lastMouseY = 0;
 let mouseHoverUniformX = 0, mouseHoverUniformY = 0, mouseClickUniformX = 0, mouseClickUniformY = 0;
 
@@ -970,11 +1004,12 @@ canvas.addEventListener('contextmenu', function (e) {
 
 canvas.addEventListener("pointerdown", (e) => {
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
-
+  console.log(e.button);
   // Mouse: behave like your old mousedown
   if (e.pointerType === "mouse") {
     if (!canControlCamera()) return;
     draggingMouse = true;
+    if (e.button == 1) middleMouseHeld = true;
     if (e.button == 2) rightMouseHeld = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
@@ -1022,13 +1057,18 @@ canvas.addEventListener("pointermove", (e) => {
         modelPitch = clampPitch(modelPitch);
       }
     }
-    else {
+    else if(e.ctrlKey) { //on ctrl: move light source
+        lightYaw -= dx * 0.005;
+        lightPitch += dy * 0.005;
+        lightPitch = clampPitch(lightPitch);
+    }
+    else { 
       // if right click: move SYS_M instead
       if(rightMouseHeld) {
-        modelX = Math.min(Math.max(modelX + dx * 0.01, -5),5);
-        modelZ = Math.min(Math.max(modelZ + dy * 0.01, -5),5);
+        modelX = Math.min(Math.max(modelX + dx * 0.01, -modelMax),modelMax);
+        modelZ = Math.min(Math.max(modelZ + dy * 0.01, -modelMax),modelMax);
       }
-      else{
+      else{ // left click: rotate camera
         camYaw -= dx * 0.005;
         camPitch += dy * 0.005;
         camPitch = clampPitch(camPitch);
@@ -1057,7 +1097,7 @@ canvas.addEventListener("pointermove", (e) => {
 
   if (!pinchStartDist) {
     pinchStartDist = dist;
-    pinchStartRadius = radius;
+    pinchStartRadius = camRadius;
     lastTouchMidX = midX;
     lastTouchMidY = midY;
     return;
@@ -1065,7 +1105,7 @@ canvas.addEventListener("pointermove", (e) => {
 
   // Pinch -> zoom (radius)
   const scale = pinchStartDist / Math.max(dist, 1);
-  radius = Math.max(0.5, Math.min(10, pinchStartRadius * scale));
+  camRadius = Math.max(0.5, Math.min(10, pinchStartRadius * scale));
 
   // Optional: two-finger midpoint drag -> orbit
   const mdx = midX - lastTouchMidX;
@@ -1083,6 +1123,7 @@ canvas.addEventListener("pointerup", (e) => {
 
   if (e.pointerType === "mouse") {
     draggingMouse = false;
+    middleMouseHeld = false;
     rightMouseHeld = false;
   }
 
@@ -1104,8 +1145,14 @@ canvas.addEventListener("pointercancel", (e) => {
 canvas.addEventListener("wheel", (e) => {
   if (!canControlCamera()) return;
   e.preventDefault();
-  radius *= Math.exp(e.deltaY * -0.001 * 0.5);
-  radius = Math.max(0.5, Math.min(10, radius));
+  if(e.ctrlKey) {
+    lightRadius *= Math.exp(e.deltaY * -0.001 * 0.5);
+    lightRadius = Math.max(0.5, Math.min(10, lightRadius));
+  }
+  else {
+    camRadius *= Math.exp(e.deltaY * -0.001 * 0.5);
+    camRadius = Math.max(0.5, Math.min(10, camRadius));
+  }
 }, { passive: false });
 
 // Manipulate camera: keys
@@ -1165,6 +1212,10 @@ function createProgramFromSources(vertSrc, fragSrc) {
     document.getElementById("log").style.color = "white";
     localStorage.setItem("frag_shader_code", fragSrc); // save on success
     localStorage.setItem("vert_shader_code", vertSrc); // save on success
+    
+    // reset time counter
+    timeStart = undefined;
+    
     // continue rendering if it stopped previously due to an error
     if(!rendering) {
       rendering = true;
@@ -1580,12 +1631,13 @@ function getTriangles(newMode) {
   }
 }
 
-let lastTime = 0;
 function render(time) {
   try {
     time *= 0.001;
     const dt = time - lastTime;
     lastTime = time;
+    if(timeStart === undefined) timeStart = time;
+    //console.log(dt);
 
     updateKeyboard(dt);
     twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -1598,58 +1650,30 @@ function render(time) {
     gl.enable(gl.DEPTH_TEST);
 
     const eye = [
-      radius * Math.cos(camPitch) * Math.sin(camYaw),
-      radius * Math.sin(camPitch),
-      radius * Math.cos(camPitch) * Math.cos(camYaw)
+      camRadius * Math.cos(camPitch) * Math.sin(camYaw),
+      camRadius * Math.sin(camPitch),
+      camRadius * Math.cos(camPitch) * Math.cos(camYaw)
     ];
     const target = [0, 0, 0];
     const up = [0, 1, 0];
+    const cam = twgl.m4.lookAt(eye, target, up);
+    
+    const lighteye = [
+      lightRadius * Math.cos(lightPitch) * Math.sin(lightYaw),
+      lightRadius * Math.sin(lightPitch),
+      lightRadius * Math.cos(lightPitch) * Math.cos(lightYaw)
+    ];
+    const light = twgl.m4.lookAt(lighteye, target, up);
 
     const model = twgl.m4.translate(twgl.m4.rotateX(twgl.m4.rotationY(modelYaw), modelPitch), [modelX, 0.0, modelZ]); //twgl.m4.identity();
-    const cam = twgl.m4.lookAt(eye, target, up);
     const view = twgl.m4.inverse(cam);
     const proj = twgl.m4.perspective(Math.PI / 4, w / h, 0.1, 100);
     const vp = twgl.m4.multiply(proj, view);
     const mvp = twgl.m4.multiply(vp, model);
 
     // Uniforms
-    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) {  sys["update"]({"time":time,"MVP":mvp, "M": model, "V": view, "P": proj, "C": cam}); }
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"T":time - timeStart, "DT":dt, "MVP":mvp, "M": model, "V": view, "P": proj, "C": cam, "L": light}); }
     Object.assign(uniforms, uniformValues); // add uniforms
-
-    /** I  plugged in the code you provided here for testing -- only change I made was fovy was not defined, so I calculated P differently **/
-    const testingCode = false;
-    if (testingCode) {
-      // 1) Camera matrices
-      const C = twgl.m4.lookAt(eye, target, up); // camera -> world
-      const V = twgl.m4.inverse(C);              // world -> camera  ✅
-      const P = twgl.m4.perspective(Math.PI / 4, w / h, 0.1, 100); // instead of twgl.m4.perspective(fovy, aspect, near, far);
-
-      // 2) Camera axes in WORLD space (columns of C), normalized
-      const camRight = (() => {
-        const v = [C[0], C[1], C[2]];
-        const len = Math.hypot(v[0], v[1], v[2]) || 1;
-        return [v[0]/len, v[1]/len, v[2]/len];
-      })();
-      const camUp = (() => {
-        const v = [C[4], C[5], C[6]];
-        const len = Math.hypot(v[0], v[1], v[2]) || 1;
-        return [v[0]/len, v[1]/len, v[2]/len];
-      })();
-
-      // 3) Upload uniforms (world-space center, size)
-      uniforms.SYS_V = V;
-      uniforms.SYS_P = P;
-      uniforms.SYS_CAM_RIGHT = camRight;
-      uniforms.SYS_CAM_UP = camUp;
-      uniforms.u_center = [1, 1, 0];     // example
-      uniforms.u_size   = 1.0;           // full size; use 0.5 if you prefer half-size
-
-      // 4) Draw as TRIANGLE_STRIP with offsets: [-1,-1], [1,-1], [-1,1], [1,1]
-      gl.useProgram(currentProgramInfo.program);
-      twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
-      twgl.setUniforms(currentProgramInfo, uniforms);
-      twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP);
-    }
 
     gl.useProgram(currentProgramInfo.program);
     twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
@@ -1692,7 +1716,8 @@ function render(time) {
     for (const [_,sys] of Object.entries(SYS_UNIFORMS)) {
       
       if(sys.value && sys.input) { for (const i in sys["input"]) {
-        sys["input"][i].value = Math.round(1000*sys.value[i])/1000; 
+        if(sys.display) sys["input"][i].value = sys.display(sys.value[i]); 
+        else sys["input"][i].value = Math.round(1000*sys.value[i])/1000; 
         }
       }
     }
@@ -1706,8 +1731,6 @@ function render(time) {
 }
 
 createProgramFromSources(vertShaderCode, fragShaderCode);
-
-requestAnimationFrame(render);
 
 // Save and load to file:
 

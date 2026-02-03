@@ -372,6 +372,77 @@
   text-overflow: clip;
 }
 
+/* The Modal (background) */
+.modal-background {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 2047; /* Sit on top */
+  /*padding-top: 100px; /* Location of the box */
+  align-items: center;      /* Centers vertically */
+  justify-content: center;  /* Centers horizontally */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  /*overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  font-family: monospace;/*Arial, Helvetica, sans-serif;*/
+}
+
+.modal-content {
+  background-color: #1b1b1b;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  margin: auto;
+  padding: 20px;
+  width: 50%;
+  align-items: center;
+}
+
+.modal-close {
+  z-index: 2048;
+  /*
+  position:absolute;
+  top: 20%;
+  right: 20%;
+  */
+  float: right;
+  font-size: 84px;
+  font-weight: bold;
+  color: white;
+  margin-top: -20px;
+  margin-right: -10px;
+  padding: 0px;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  vertical-align: middle;
+  overflow:hidden;
+  /*
+  background-color: #fefefe;
+  border: 4px solid #888;
+  border-radius: 20px;
+  float: right;
+  */
+}
+
+.modal-close:hover,
+.rssr-modal-close:focus {
+  color: red;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.texture-preview {
+  justify-self:center;
+  text-align: center;
+  padding: 20px;
+  padding-top:0px;
+}
+
   </style>
 </head>
 <body>
@@ -417,6 +488,23 @@
         <button id="reset-all" style="flex:1;">New</button>
       </div>
       <input type="file" id="load-file" accept=".json" style="display:none" />
+    </div>
+  </div>
+  <input type="image" id="myBtn" width="32" height="32" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==" style="display:one;">
+  <div id="textureModal" class="modal-background">
+    <div class="modal-content">
+      <div class="modal-close">&times;</div>
+      <div class="texture-preview">
+        <h1 style="margin-top: 0px;" id="texture-h1">sampler2D[0] tex</h1>
+        <img id="texture-preview-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==
+" width="256" height="256" style="justify:center;">
+        <p id="texture-p">Filename</p>
+      </div>
+      <div style="display:flex; gap:0.5em;">
+        <button id="upload-texture" style="flex:1;">Upload texture</button>
+        <button id="fetch-texture" style="flex:1;">Fetch from url</button>
+      </div>
+      <input type="file" id="file-input-texture" accept="image/*" style="display:none" />
     </div>
   </div>
 </div>
@@ -601,6 +689,8 @@ if (teachingMode && unlockLevel < 2) {
   shad.addEventListener("input", func);
 }
 
+const DEFAULT_TEXTURE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==";
+
 const DEFAULT_ATTRIBUTES = {
   POSITION : { type: gl.FLOAT_VEC4, size: 14*4, shape: [14,1,4], arrays: [
     [[-1.0, 1.0, 1.0, 1.0]],    // front-top-left
@@ -773,6 +863,21 @@ const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
   [gl.BOOL_VEC2]:        { shape: [1,2], label: 'bvec2',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
   [gl.BOOL_VEC3]:        { shape: [1,3], label: 'bvec3',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
   [gl.BOOL_VEC4]:        { shape: [1,4], label: 'bvec4',  type: 'checkbox', parser: (x) => (Number(x.checked)) },
+  [gl.SAMPLER_2D]:        { shape: [1,1], label: 'sampler2D',  type: 'image', defaultVal: {"src":DEFAULT_TEXTURE}, parser: (x) => ({"src":x.src,"label":x.alt}), 
+    load: (savedVariable, newVal, index) => {
+      try {
+        const tex = twgl.createTexture(gl, newVal,(e)=> e ? logError(e) : null);
+        if(tex) {
+          savedVariable.arrays[index][0][0] = newVal; //TODO: take row/group/column input, or otherwise handle multiple things 
+          return tex;
+        } else return false;
+      } 
+      catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }, setup: makeImageInput,
+  },
 };
 const uniformsDiv = document.getElementById("all-uniforms");
 const attributesDiv = document.getElementById("all-attributes");
@@ -867,6 +972,7 @@ out vec2 uv;
 
 void main() {
   uv = position.xy * 0.5 + 0.5;
+  uv.y = 1.0 - uv.y;
   gl_Position = SYS_MVP * position;
 }`;
 
@@ -1239,9 +1345,6 @@ function extractVariables(program) {
   if(!saved_variables.uniforms) saved_variables.uniforms = {};
   if(!saved_variables.attributes) saved_variables.attributes = {};
   
-  // silly way of doing this but it works for now
-  console.log(saved_variables.attributes)
-  
   uniformsDiv.innerHTML = ''; // clear UI
   attributesDiv.innerHTML = ''; // clear UI
   
@@ -1252,15 +1355,18 @@ function extractVariables(program) {
 function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,variableValues, editorDiv) {
   
   // validate loaded things
-  for (const [name,obj] of Object.entries(saved)) if (!(
+  for (const [name,obj] of Object.entries(saved)) {
+    if (!( // qualities of valid variables:
       obj && obj.arrays && obj.shape &&
       obj.arrays.length == obj.shape[0] &&
       obj.arrays.flat().length == obj.shape[0] * obj.shape[1] &&
-      obj.arrays.flat().flat().length == obj.shape[0] * obj.shape[1] * obj.shape[2])) {
-    console.warn(`Saved ${variableType} ${name} failed validation: `,obj);
-    
-    delete saved[name];
+      obj.arrays.flat().flat().length == obj.shape[0] * obj.shape[1] * obj.shape[2]
+    )) {
+      console.warn(`Saved ${variableType} ${name} failed validation: `,obj);
+      delete saved[name];
+    }
   }
+  
   
   if(variableType == "attribute")
   for (const i in extractedInfo) {
@@ -1306,7 +1412,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     let rowCountPerGroup = shape[1]; // i.e., rows per row group
     let colCount = shape[2]; // col count is TOTAL number of columns to RENDER
     let rowCount = rowGroupCount * rowCountPerGroup; // row count is TOTAL number of rows to RENDER (across rows and row groups)
-    if (colCount == 1 && rowCountPerGroup == 1 && rowCount > 1){
+    if (colCount == 1 && rowCountPerGroup == 1 && rowCount > 1 && !typeInfo.wide){
       if (rowCount <= 4) { // compress multiple rows into one if less than 4 total
         colCount = rowCount;
         rowCount = 1;
@@ -1325,7 +1431,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     }
     const valueCount = rowCount * colCount;
 
-    const defaultVal = 1;
+    const defaultVal = typeInfo.defaultVal === undefined ? 1 : typeInfo.defaultVal;  
     const nestedVal = Array.from({length: shape[0]}, e => Array.from({length: shape[1]}, f => Array(shape[2]).fill(defaultVal))); //unflattened
     // nestedVal is only as big as it needs to be, savedVal holds ALL saved values
     if(variableName in saved) {  
@@ -1344,7 +1450,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       }
       saved[variableName].shape = maxShape;
     }
-    else saved[variableName] = {"arrays":nestedVal, "shape":shape}
+    else saved[variableName] = {"arrays":nestedVal, "shape":shape};
     saved[variableName].name = info.name;
     saved[variableName].size = info.size;
     
@@ -1353,8 +1459,22 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     saved[variableName].type = info.type;
     saved[variableName].isSys = isSys;
 
-    variableValues[variableName] = nestedVal.flat().flat();
-    variableValues[variableName].type = typeInfo.array;
+    // load values into variableValues array for TWGL: either with custom loader or directly with the flattened nestedVal array
+    if(typeInfo.load) {
+      const flatVals = nestedVal.flat().flat();
+      variableValues[variableName] = Array(arrayElemCount);
+      for (const j in flatVals) {
+        const ret = typeInfo.load(saved[variableName], flatVals[j], j);
+        if(ret) {
+          if(arrayElemCount > 1) variableValues[variableName][j] = ret;
+          else variableValues[variableName] = ret;
+        }
+      }
+    }
+    else {
+      variableValues[variableName] = nestedVal.flat().flat();
+      if(typeInfo.array) variableValues[variableName].type = typeInfo.array;
+    }
 
     // Create UI
     const wrapper = document.createElement("div");
@@ -1450,6 +1570,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       if(typeInfo.max) input.max = typeInfo.max;
       if(isVertexCount) input.max = vertexCount-1;
       if(input.type == "checkbox") input.checked = !!(value[j]);
+      if(typeInfo.setup) typeInfo.setup(input, saved[variableName].arrays[elemVal][rgVal][cVal], variableName, label.textContent); 
       else input.value = value[j];
 
       if(isSys){
@@ -1457,10 +1578,18 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
         input.title = `Built-in system ${variableType} (read-only)`;
         SYS_UNIFORMS[variableName]["input"][j] = input; ///TODO ***
       }
-      else{
-      input.addEventListener("input", () => {
-        const parsed = typeInfo.parser(input);
-          if (!isNaN(parsed)) {
+      else {
+        input.addEventListener("input", () => { //TODO: blur + enter to submit for image laoding
+          const parsed = typeInfo.parser(input);
+          if(typeInfo.load) { //FINDME_SAVE
+            const ret = typeInfo.load(saved[variableName], parsed, j);
+            if(ret) {
+              if (variableValues[variableName].length) variableValues[variableName][j] = ret;
+              else variableValues[variableName] = ret;
+              localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables));
+            }
+          }
+          else if (!isNaN(parsed)) {
             value[j] = parsed;
             variableValues[variableName] = value;
             saved[variableName].arrays[elemVal][rgVal][cVal] = parsed;
@@ -2041,8 +2170,116 @@ async function newWorkspace() {
 document.getElementById("reset-all").addEventListener("click", newWorkspace);
 
 
+/// Texture picker
 
+// Get the modal
+var modal = document.getElementById("textureModal");
 
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("modal-close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "flex";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+//      if(typeInfo.setup) typeInfo.setup(input, saved[variableName].arrays[elemVal][rgVal][cVal], variableName, label.textContent); 
+
+function makeImageInput(input, val, varname, vartitle) {
+  input.src = val.src;
+  input.width = "32";
+  input.height = "32";
+  input.id = "input-"+varname;
+  if(val.label) input.alt = val.label;
+  input.onerror = (e)=>{input.src = DEFAULT_TEXTURE; input.alt = "";};
+  input.onclick = function() {
+    const imgFileInput = document.getElementById("file-input-texture");
+    document.getElementById("texture-h1").textContent = vartitle;
+    document.getElementById("texture-p").textContent = input.alt ? input.alt : "";
+    document.getElementById("texture-preview-img").src = input.src;
+    document.getElementById("upload-texture").onclick = async () => {
+      // Preferred: system Open dialog (Chromium)
+      console.log("clicky");
+      if (window.showOpenFilePicker) {
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            multiple: false,
+            types: [{
+              description: "Image file",
+              accept: { "image/*": [".png", ".gif", ".jpeg", ".jpg", ".bmp"] }
+            }]
+          });
+          const file = await handle.getFile();
+          console.log("filteget");
+          input.src = await convertImageToBase64(file)
+          input.alt = file.name;
+          input.dispatchEvent(new Event('input'));
+          modal.style.display = "none";
+        } catch (err) {
+          if (err?.name === "AbortError") return; // user canceled
+          logError(err);
+        }
+      }
+      else imgFileInput.click();  // Fallback: use hidden <input type="file">
+    }    
+    imgFileInput.onchange = async () => {
+      try {
+        if (!imgFileInput.files?.length) return;
+        const file = imgFileInput.files[0];
+        input.src = await convertImageToBase64(file)
+        input.alt = file.name;
+        input.dispatchEvent(new Event('input'));
+        modal.style.display = "none";
+      } catch (err) {
+        if (err?.name === "AbortError") return; // user canceled
+        logError(err);
+      }
+    }
+    document.getElementById("fetch-texture").onclick = () => {
+      let newSrc = prompt("Enter the URL of an externally hosted texture to load:", "");
+      if (newSrc != null){
+        if(!newSrc.startsWith("http") && !newSrc.startsWith("data:")) newSrc = "https://" + newSrc;
+        input.src = newSrc;
+        input.alt = newSrc;
+        input.dispatchEvent(new Event('input'));
+        modal.style.display = "none";
+      }
+    }
+    modal.style.display = "flex";
+  }
+}
+
+function convertImageToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      resolve(event.target.result); // Resolve the promise on successful load
+    };
+
+    reader.onerror = (error) => {
+      reject(error); // Reject the promise if an error occurs
+    };
+
+    // Start the asynchronous read operation
+    reader.readAsDataURL(file);
+  });
+}
 
 </script>
 </body>

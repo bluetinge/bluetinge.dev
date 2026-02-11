@@ -1529,7 +1529,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
         wrapper.classList.toggle("collapsed");
         arrow.textContent = wrapper.classList.contains("collapsed") ? " ▶ " : " ▼ ";
         saved[variableName].collapsed = wrapper.classList.contains("collapsed");
-        localStorage.setItem("shader_uniforms", JSON.stringify(allSavedVariables)); //TODO ****
+        localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables)); //TODO ****
       });
     }
     wrapper.prepend(arrow);

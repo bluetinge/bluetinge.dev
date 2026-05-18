@@ -193,21 +193,38 @@
   grid-column: 2 / span 3;
 }
 
-.vertex-count .variable-row { 
+.attribute-header .variable-row { 
   display: flex;
   grid-column: 2 / span 3;
   align-items: center;
   padding: 0.25em;
 }
 
-.vertex-count .variable-label {
-  display: block;
-  grid-column: 2;
+.attribute-header .variable-label{
+  min-width: 5.5em;
 }
 
-.vertex-count input {
-  display: block;
-  grid-column: 3;
+.attribute-header .variable-input {
+  margin: 0.1em 0.5em 0em 0.25em;
+}
+
+.vertex-count.variable-label {
+  min-width: 5.0em;
+}
+.vertex-count.variable-input {
+  width: 3em;
+  min-width: 2.25em;
+  max-width: 3em;
+}
+.instance-count.variable-input {
+  width: 3.5em;
+  min-width: 2.25em;
+  max-width: 4em;
+}
+.instance-checkbox {
+  width: unset;
+  margin: 0em;
+  margin-left: 2.5em;
 }
 
 .group-end.variable-row { /* End of a row group*/
@@ -227,9 +244,18 @@
     
     input[type="number"] {
       width: 4em;
+      min-width: 3.5em;
+      max-width: 5em;
     }
     
-    input[type="checkbox"] {
+    @supports (field-sizing: content) {
+      .single-row input[type="number"] {
+        field-sizing: content;
+        width: unset;
+      }
+    }
+
+    .variable-contents input[type="checkbox"] {
       width: 2em;
     }
     
@@ -297,8 +323,7 @@
 
 }
     
-    .hide { display: None; }
-    .draw-mode {padding: 0.5em; visibility: hidden;}
+.hide { display: None; }
 
 #canvas-container {
   position: relative;
@@ -884,6 +909,8 @@ const attributesDiv = document.getElementById("all-attributes");
 let uniformValues = {};
 let attributeValues = {};
 let vertexCount = localStorage.getItem("vertexCount") || 4;
+if (vertexCount > 9999) vertexCount = 9999;
+let instanceCount = localStorage.getItem("instanceCount") || 0;
 let drawMode = localStorage.getItem("drawMode") || "triangle_strip";
 let triangles = [[0,0,0],[0,0,0]];
 let variablesTab = "uniforms";
@@ -1425,15 +1452,20 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       //if triangle strip: continue      
       variableName = "Triangles:";
     }
+    const isInstanced = (variableType == "attribute" && instanceCount > 0 && saved[variableName] && saved[variableName]["divisor"] > 0);
+    
     if(isSys && info.type != SYS_UNIFORMS[variableName]["type"]) {
       throw new Error(`System ${variableType} ${variableName} must be of type ${uniformTypeMap[SYS_UNIFORMS[variableName]["type"]]["label"]}`);
     }
     const typeInfo = uniformTypeMap[info.type];
     if (!typeInfo) continue; // skip unsupported types for now
-    
     // shape: always length 3. [arrayElemCount, rowCountPerGroup, colCount]
     // note: gl.FLOAT_MAT2x3 means two vec3s, which in our representation are rows. So: 2 rows of 3 columns
-    const shape = [variableType == "attribute" ? (isVertexCount ? triangles.length : vertexCount) : info.size, typeInfo.shape[0], typeInfo.shape[1]]
+    const shape = [variableType == "attribute"? 
+                    (isVertexCount? triangles.length :
+                    isInstanced? instanceCount / saved[variableName]["divisor"] :
+                    vertexCount) :
+                  info.size, typeInfo.shape[0], typeInfo.shape[1]]
     const arrayElemCount = shape[0];
     let rowGroupCount = shape[0];
     let rowCountPerGroup = shape[1]; // i.e., rows per row group
@@ -1502,6 +1534,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       variableValues[variableName] = nestedVal.flat().flat();
       if(typeInfo.array) variableValues[variableName].type = typeInfo.array;
     }
+    if(isInstanced) variableValues[variableName]["divisor"] = saved[variableName]["divisor"];
 
     // Create UI
     const wrapper = document.createElement("div");
@@ -1517,6 +1550,8 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     label.textContent = `${typeInfo.label}${arrayElemCount> 1 ? `[${arrayElemCount}]`:""} ${variableName}`;
     //if(isVertexCount) label.textContent = "triangle indices:";
     wrapper.appendChild(label);
+
+
 
     const allRows = document.createElement("div");
     allRows.classList.add("variable-contents");
@@ -1541,6 +1576,24 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       });
     }
     wrapper.prepend(arrow);
+    
+    // instance checkbox
+    if(variableType == "attribute") {
+      const instanceCheckbox = document.createElement("input");
+      instanceCheckbox.classList.add("instance-checkbox");
+      if (!(instanceCount > 0)) instanceCheckbox.classList.add("hide");
+      instanceCheckbox.type = "checkbox"; 
+      instanceCheckbox.checked = saved[variableName].divisor >= 1? true : false; 
+      instanceCheckbox.title="Instanced attribute? (divisor=1)";
+      instanceCheckbox.addEventListener("input", () => {
+        variableValues[variableName].divisor = saved[variableName].divisor = instanceCheckbox.checked? 1 : 0;
+        editorDiv.innerHTML = '';
+        buildVariableEditor("attribute", allSavedVariables, saved, extractedInfo, variableValues, editorDiv);
+        buildAttributeBuffers();
+        localStorage.setItem("shader_variables", JSON.stringify(allSavedVariables)); //TODO ****
+      });
+      label.append(instanceCheckbox);
+    }
     
     let currentRow = document.createElement("div");
     currentRow.classList.add("variable-row");
@@ -1644,7 +1697,8 @@ function buildAttributeBuffers() {
     arrays[name] = {
       numComponents: attr.length / vertexCount,
       data: attr,
-      type: attr.type
+      type: attr.type,
+      divisor: attr.divisor
     };
   }
   bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
@@ -1660,70 +1714,117 @@ document.getElementById("compile").addEventListener("click", () => {
   createProgramFromSources(vertShaderCode, fragShaderCode);
 });
 
+// make the attribute editor header: vertex count, instance count, draw mode, etc.
 function buildVertexCountEditor(allSavedVariables,saved,extractedInfo,variableValues, editorDiv) {
   // Create UI
   const wrapper = document.createElement("div");
-  wrapper.classList.add("variable-wrapper", "vertex-count");
+  wrapper.classList.add("variable-wrapper", "attribute-header");
 
   const vcRow = document.createElement("div");
   vcRow.classList.add("variable-row", "single-row");
 
-  const label = document.createElement("label");
-  label.classList.add("variable-label");
-  label.textContent = "Vertex count: ";
-  vcRow.appendChild(label);
+  // Vertex count input
+  {
+    //const vcDiv = document.createElement("span");
+    //vcDiv.classList.add("draw-mode");
+    
+    const label = document.createElement("label");
+    label.classList.add("variable-label","vertex-count");
+    label.textContent = "Vertices:";
+    vcRow.appendChild(label);
 
-  const input = document.createElement("input");
-  input.classList.add("variable-input");
-  input.type = "number";
-  input.step = 1;
-  input.min = 0;
-  input.max = 255;
-  input.value = vertexCount;
+    const input = document.createElement("input");
+    input.classList.add("variable-input","vertex-count");
+    input.type = "number";
+    input.step = 1;
+    input.min = 0;
+    input.max = 255;
+    input.value = vertexCount;
 
-  input.addEventListener("change", () => {
-    const parsed = parseInt(input.value);
-    if (!isNaN(parsed) && parsed > 0) {
-      vertexCount = parsed;
+    input.addEventListener("change", () => {
+      let parsed = parseInt(input.value);
+      if (parsed > input.max) parsed = input.value = input.max;
+      if (!isNaN(parsed) && parsed > 0 && parsed < input.max) {
+        vertexCount = parsed;
+        editorDiv.innerHTML = '';
+        buildVariableEditor("attribute", allSavedVariables, saved, extractedInfo, variableValues, editorDiv);
+        buildAttributeBuffers();
+        localStorage.setItem("vertexCount",vertexCount);
+      }
+    });
+    vcRow.appendChild(input);
+    //vcRow.appendChild(vcDiv);
+  }
+  
+  //Instance count input
+  {
+    //const icDiv = document.createElement("span");
+    //icDiv.classList.add("draw-mode");
+  
+    const label = document.createElement("label");
+    label.classList.add("variable-label","instance-count");
+    label.textContent = " Instances:";
+    vcRow.appendChild(label);
+
+    const input = document.createElement("input");
+    input.classList.add("variable-input","instance-count");
+    input.type = "number";
+    input.step = 1;
+    input.min = 0;
+    input.max = 65535;
+    if(instanceCount > 0) input.value = instanceCount; 
+
+    input.addEventListener("change", () => {
+      const parsed = parseInt(input.value);
+      if (parsed > input.max) instanceCount = input.value = input.max;
+      else if(isNaN(parsed) || parsed < 0) instanceCount = 0; 
+      else instanceCount = parsed;
+      document.querySelectorAll('.instance-checkbox').forEach(e => {
+        if(instanceCount == 0) e.classList.add("hide");
+        else e.classList.remove("hide");
+      });
       editorDiv.innerHTML = '';
       buildVariableEditor("attribute", allSavedVariables, saved, extractedInfo, variableValues, editorDiv);
       buildAttributeBuffers();
-      localStorage.setItem("vertexCount",vertexCount);
-    }
-  });
-  vcRow.appendChild(input);
+      localStorage.setItem("instanceCount",instanceCount);
+    });
+    vcRow.appendChild(input);
+    //vcRow.appendChild(icDiv);
+  }
   
   // select mode
-  const drawModeDiv = document.createElement("div");
+  { 
+    //const drawModeDiv = document.createElement("div");
+    //drawModeDiv.classList.add("draw-mode");
+    
+    const label2 = document.createElement("label");
+    label2.classList.add("variable-label","draw-mode");
+    label2.textContent = " Draw mode: ";
+    vcRow.appendChild(label2);
 
-  drawModeDiv.classList.add("draw-mode");
-  const label2 = document.createElement("label");
-  //label2.classList.add("variable-label");
-  label2.textContent = " Draw mode: ";
-  drawModeDiv.appendChild(label2);
-
-  const comboBox = document.createElement("select");
-  comboBox.name = "draw-mode";
-  const opt1 = document.createElement("option");
-  opt1.value = "triangle_strip";
-  opt1.textContent = "Triangle strip";
-  const opt2 = document.createElement("option");
-  opt2.value = "index";
-  opt2.textContent = "Triangles by index";
-  comboBox.appendChild(opt1);
-  comboBox.appendChild(opt2);
-  
-  comboBox.addEventListener("change",() => {
-    const newMode = comboBox.value;
-    const indexWrapper = document.getElementById("indexWrapper");
-    if(newMode == "index") indexWrapper.classList.remove("hide");
-    if(newMode != "index") indexWrapper.classList.add("hide");
-    drawMode = newMode;
-  })
-  
-  drawModeDiv.appendChild(comboBox);
-  vcRow.appendChild(drawModeDiv)
-  wrapper.appendChild(vcRow);
+    const comboBox = document.createElement("select");
+    comboBox.classList.add("variable-input","draw-mode");
+    comboBox.name = "draw-mode";
+    const opt1 = document.createElement("option");
+    opt1.value = "triangle_strip";
+    opt1.textContent = "Triangle strip";
+    const opt2 = document.createElement("option");
+    opt2.value = "index";
+    opt2.textContent = "Triangles by index";
+    comboBox.appendChild(opt1);
+    comboBox.appendChild(opt2);
+    
+    comboBox.addEventListener("change",() => {
+      const newMode = comboBox.value;
+      const indexWrapper = document.getElementById("indexWrapper");
+      if(newMode == "index") indexWrapper.classList.remove("hide");
+      if(newMode != "index") indexWrapper.classList.add("hide");
+      drawMode = newMode;
+    })
+    
+    vcRow.appendChild(comboBox);
+    //vcRow.appendChild(drawModeDiv)
+  }
   wrapper.appendChild(vcRow);
   /*
   // then the index thing...
@@ -1814,7 +1915,7 @@ function render(time) {
     gl.useProgram(currentProgramInfo.program);
     twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
     twgl.setUniforms(currentProgramInfo, uniforms);
-    twgl.drawBufferInfo(gl, bufferInfo,gl.TRIANGLE_STRIP)
+    twgl.drawBufferInfo(gl, bufferInfo,gl.TRIANGLE_STRIP,bufferInfo.numElements,0,instanceCount > 0? instanceCount : undefined);
 
     // once, after program creation
     

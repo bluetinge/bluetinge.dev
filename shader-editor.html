@@ -1691,11 +1691,13 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
   for (let i in sysUniforms) { editorDiv.appendChild(sysUniforms[i]); } ///TODO ***
 }
 
+// this entire function is. SUCH a bad way of doing things there NEEDS to be a better way. Its unreal
+// For starters: there should not be a separate array created here, OBVIOUSLY. God.
 function buildAttributeBuffers() {
   const arrays = {};
   for (const [name, attr] of Object.entries(attributeValues)) {
     arrays[name] = {
-      numComponents: attr.length / vertexCount,
+      numComponents: attr.length / ( (attr.divisor >= 1) ? instanceCount / attr.divisor : vertexCount ) ,
       data: attr,
       type: attr.type,
       divisor: attr.divisor

@@ -1390,6 +1390,7 @@ function extractVariables(program) {
   for (let i = 0; i < numAttributes; i++) {
     const info = gl.getActiveAttrib(program, i);
     //if(info && info.name) info.location = gl.getAttribLocation(program, info.name);
+    if (info && info.name && info.name.startsWith("gl_")) continue; //builtin, skip
     if(info && info.name && info.size == 1/*&& info.location*/) attributeInfo.push(info);
     else console.warn(`Malformed attribute ${i} extracted: `, info);
   }

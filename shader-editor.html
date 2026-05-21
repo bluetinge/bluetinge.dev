@@ -713,6 +713,17 @@ if (teachingMode && unlockLevel < 2) {
   shad.addEventListener("input", func);
 }
 
+const DRAW_MODES = {
+triangles: {glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
+triangle_strip: {glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
+triangle_fan: {glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
+//index: {glEnum:gl.TRIANGLES, textContent: "Triangles by index",indexed:true},
+lines: {glEnum:gl.LINES, textContent: "Lines"},
+line_strip: {glEnum:gl.LINE_STRIP, textContent: "Line strip"},
+line_loop: {glEnum:gl.LINE_LOOP, textContent: "Line loop"},
+points: {glEnum:gl.POINTS, textContent: "Points"},
+};
+
 const DEFAULT_TEXTURE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==";
 
 const DEFAULT_ATTRIBUTES = {
@@ -1426,7 +1437,7 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
   if(variableType == "attribute")
   for (const i in extractedInfo) {
     const aName = extractedInfo[i].name;
-    if(aName == "vertex count") saved["Triangles:"] = getTriangles(drawMode);  
+    // if(aName == "vertex count") saved["Triangles:"] = getTriangles(drawMode);  
     if (!saved[aName]) { // if the attribute is not already saved
       for (const def_name in DEFAULT_ATTRIBUTES) {
         console.log(aName,def_name);
@@ -1808,21 +1819,20 @@ function buildVertexCountEditor(allSavedVariables,saved,extractedInfo,variableVa
     const comboBox = document.createElement("select");
     comboBox.classList.add("variable-input","draw-mode");
     comboBox.name = "draw-mode";
-    const opt1 = document.createElement("option");
-    opt1.value = "triangle_strip";
-    opt1.textContent = "Triangle strip";
-    const opt2 = document.createElement("option");
-    opt2.value = "index";
-    opt2.textContent = "Triangles by index";
-    comboBox.appendChild(opt1);
-    comboBox.appendChild(opt2);
-    
+    for (const [key, obj] of Object.entries(DRAW_MODES)) {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = obj.textContent;
+      comboBox.appendChild(opt);
+    }
+    comboBox.value = drawMode;
     comboBox.addEventListener("change",() => {
       const newMode = comboBox.value;
       const indexWrapper = document.getElementById("indexWrapper");
-      if(newMode == "index") indexWrapper.classList.remove("hide");
-      if(newMode != "index") indexWrapper.classList.add("hide");
+      if(DRAW_MODES[newMode].indexedDraw) indexWrapper.classList.remove("hide");
+      else indexWrapper.classList.add("hide");
       drawMode = newMode;
+      localStorage.setItem("drawMode",drawMode);
     })
     
     vcRow.appendChild(comboBox);
@@ -1918,38 +1928,7 @@ function render(time) {
     gl.useProgram(currentProgramInfo.program);
     twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
     twgl.setUniforms(currentProgramInfo, uniforms);
-    twgl.drawBufferInfo(gl, bufferInfo,gl.TRIANGLE_STRIP,bufferInfo.numElements,0,instanceCount > 0? instanceCount : undefined);
-
-    // once, after program creation
-    
-    // FOR TESTING:  
-    
-    /*
-    
-    const strip4 = twgl.createBufferInfoFromArrays(gl, {
-      a_dummy: { numComponents: 1, data: [0, 1, 2, 3] }, // any small attrib; not used
-    });
-
-    // when drawing
-    twgl.setBuffersAndAttributes(gl, currentProgramInfo, strip4);
-    twgl.setUniforms(currentProgramInfo, uniforms);
-    // draw 4 verts as TRIANGLE_STRIP (force mode + count)
-    twgl.drawBufferInfo(gl, strip4, gl.TRIANGLE_STRIP, 4);
-
-    */ 
-    
-    
-    /*
-    //*Testing instances*
-    // Example: 3 segments 
-    // Draw: one strip of 4 verts per instance; no attributes, no indices.
-    const instanceCount = 3;
-    // TWGL needs a bufferInfo with numElements for non-indexed draws.
-    const bufferInfo = { numElements: 4 };
-    gl.depthFunc(gl.LESS);
-    twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLE_STRIP, 4, 0, instanceCount); //*testing instances
-    */
-    //
+    twgl.drawBufferInfo(gl, bufferInfo,DRAW_MODES[drawMode].glEnum,bufferInfo.numElements,0,instanceCount > 0? instanceCount : undefined);
     
     requestAnimationFrame(render);
     rendering = true;

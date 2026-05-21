@@ -714,14 +714,13 @@ if (teachingMode && unlockLevel < 2) {
 }
 
 const DRAW_MODES = {
-triangles: {id:0, glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
-triangle_strip: {id:1, glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
-triangle_fan: {id:2, glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
-//index: {glEnum:gl.TRIANGLES, textContent: "Triangles by index",indexed:true},
-lines: {id:3, glEnum:gl.LINES, textContent: "Lines"},
-line_strip: {id:4, glEnum:gl.LINE_STRIP, textContent: "Line strip"},
-line_loop: {id:5, glEnum:gl.LINE_LOOP, textContent: "Line loop"},
-points: {id:6, glEnum:gl.POINTS, textContent: "Points"},
+points: {id:0, glEnum:gl.POINTS, textContent: "Points"},
+lines: {id:1, glEnum:gl.LINES, textContent: "Lines",indexed:true},
+line_loop: {id:2, glEnum:gl.LINE_LOOP, textContent: "Line loop"},
+line_strip: {id:3, glEnum:gl.LINE_STRIP, textContent: "Line strip"},
+triangles: {id:4, glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
+triangle_strip: {id:5, glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
+triangle_fan: {id:6, glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
 };
 
 const DEFAULT_TEXTURE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==";

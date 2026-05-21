@@ -714,14 +714,14 @@ if (teachingMode && unlockLevel < 2) {
 }
 
 const DRAW_MODES = {
-triangles: {glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
-triangle_strip: {glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
-triangle_fan: {glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
+triangles: {id:0, glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
+triangle_strip: {id:1, glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
+triangle_fan: {id:2, glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
 //index: {glEnum:gl.TRIANGLES, textContent: "Triangles by index",indexed:true},
-lines: {glEnum:gl.LINES, textContent: "Lines"},
-line_strip: {glEnum:gl.LINE_STRIP, textContent: "Line strip"},
-line_loop: {glEnum:gl.LINE_LOOP, textContent: "Line loop"},
-points: {glEnum:gl.POINTS, textContent: "Points"},
+lines: {id:3, glEnum:gl.LINES, textContent: "Lines"},
+line_strip: {id:4, glEnum:gl.LINE_STRIP, textContent: "Line strip"},
+line_loop: {id:5, glEnum:gl.LINE_LOOP, textContent: "Line loop"},
+points: {id:6, glEnum:gl.POINTS, textContent: "Points"},
 };
 
 const DEFAULT_TEXTURE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==";
@@ -871,6 +871,24 @@ const SYS_UNIFORMS = {
     SYS_UNIFORMS["SYS_LIGHT_POS"].value = newVal;
     uniformValues["SYS_LIGHT_POS"] = newVal;
   }},
+  SYS_MODE:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_MODE"]["value"];
+    if(!value) return;
+    value[0] = DRAW_MODES[drawMode].id;
+    uniformValues["SYS_MODE"] = value;
+  }},
+  SYS_VERTICES:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_VERTICES"]["value"];
+    if(!value) return;
+    value[0] = vertexCount;
+    uniformValues["SYS_VERTICES"] = value;
+  }},
+  SYS_INSTANCES:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_INSTANCES"]["value"];
+    if(!value) return;
+    value[0] = instanceCount;
+    uniformValues["SYS_INSTANCES"] = value;
+  }},
 };
 const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
   [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
@@ -1003,6 +1021,9 @@ uniform mat4 SYS_MVP;
 //uniform vec3 SYS_CAM_POS;
 //uniform mat4 SYS_LIGHT_TRANSFORM;
 //uniform vec3 SYS_LIGHT_POS;
+//uniform int SYS_MODE;
+//uniform int SYS_VERTICES;
+//uniform int SYS_INSTANCES;
 
 in vec4 position;
 out vec2 uv;

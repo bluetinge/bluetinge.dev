@@ -714,13 +714,13 @@ if (teachingMode && unlockLevel < 2) {
 }
 
 const DRAW_MODES = {
-points: {id:0, glEnum:gl.POINTS, textContent: "Points"},
-lines: {id:1, glEnum:gl.LINES, textContent: "Lines",indexed:true},
-line_loop: {id:2, glEnum:gl.LINE_LOOP, textContent: "Line loop"},
-line_strip: {id:3, glEnum:gl.LINE_STRIP, textContent: "Line strip"},
-triangles: {id:4, glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true},
-triangle_strip: {id:5, glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip"},
-triangle_fan: {id:6, glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan"},
+points: {id:0, glEnum:gl.POINTS, textContent: "Points", multiPass: {SYS_COUNT: "SYS_PASS_POINTS_COUNT", INFO_ID: "PP_ID",}},
+lines: {id:1, glEnum:gl.LINES, textContent: "Lines",indexed:true, multiPass: {SYS_COUNT: "SYS_PASS_LINES_COUNT", INFO_ID: "PL_ID",}},
+line_loop: {id:2, glEnum:gl.LINE_LOOP, textContent: "Line loop", multiPass: {SYS_COUNT: "SYS_PASS_LINELOOP_COUNT", INFO_ID: "PLL_ID",}},
+line_strip: {id:3, glEnum:gl.LINE_STRIP, textContent: "Line strip", multiPass: {SYS_COUNT: "SYS_PASS_LINESTRIP_COUNT", INFO_ID: "PLS_ID",}},
+triangles: {id:4, glEnum:gl.TRIANGLES, textContent: "Triangles",indexed:true, multiPass: {SYS_COUNT: "SYS_PASS_TRIANGLES_COUNT", INFO_ID: "PT_ID",}},
+triangle_strip: {id:5, glEnum:gl.TRIANGLE_STRIP, textContent: "Triangle strip", multiPass: {SYS_COUNT: "SYS_PASS_TRIANGLESTRIP_COUNT", INFO_ID: "PTS_ID",}},
+triangle_fan: {id:6, glEnum:gl.TRIANGLE_FAN, textContent: "Triangle fan",  multiPass: {SYS_COUNT: "SYS_PASS_TRIANGLEFAN_COUNT", INFO_ID: "PTF_ID",}},
 };
 
 const DEFAULT_TEXTURE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACH5BAAAAAAALAAAAAABAAEAAAICTAEAOw==";
@@ -888,8 +888,113 @@ const SYS_UNIFORMS = {
     value[0] = instanceCount;
     uniformValues["SYS_INSTANCES"] = value;
   }},
+  SYS_PASS_POINTS_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_POINTS_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_POINTS_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_POINTS_COUNT"].max),SYS_UNIFORMS["SYS_PASS_POINTS_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_POINTS_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_POINTS_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_POINTS_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PP_ID;
+    uniformValues["SYS_PASS_POINTS_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_LINES_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINES_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_LINES_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_LINES_COUNT"].max),SYS_UNIFORMS["SYS_PASS_LINES_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_LINES_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_LINES_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINES_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PL_ID;
+    uniformValues["SYS_PASS_LINES_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_LINESTRIP_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINESTRIP_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_LINESTRIP_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_LINESTRIP_COUNT"].max),SYS_UNIFORMS["SYS_PASS_LINESTRIP_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_LINESTRIP_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_LINESTRIP_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINESTRIP_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PLS_ID;
+    uniformValues["SYS_PASS_LINESTRIP_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_LINELOOP_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINELOOP_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_LINELOOP_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_LINELOOP_COUNT"].max),SYS_UNIFORMS["SYS_PASS_LINELOOP_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_LINELOOP_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_LINELOOP_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_LINELOOP_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PLL_ID;
+    uniformValues["SYS_PASS_LINELOOP_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_TRIANGLES_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLES_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_TRIANGLES_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_TRIANGLES_COUNT"].max),SYS_UNIFORMS["SYS_PASS_TRIANGLES_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_TRIANGLES_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_TRIANGLES_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLES_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PT_ID;
+    uniformValues["SYS_PASS_TRIANGLES_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_TRIANGLESTRIP_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLESTRIP_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_TRIANGLESTRIP_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_TRIANGLESTRIP_COUNT"].max),SYS_UNIFORMS["SYS_PASS_TRIANGLESTRIP_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_TRIANGLESTRIP_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_TRIANGLESTRIP_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLESTRIP_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PTS_ID;
+    uniformValues["SYS_PASS_TRIANGLESTRIP_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
+  SYS_PASS_TRIANGLEFAN_COUNT:      { type: gl.INT,   size: 1, editable: true, min: 0, max: 32, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLEFAN_COUNT"]["value"];
+    let input = SYS_UNIFORMS["SYS_PASS_TRIANGLEFAN_COUNT"].input;
+    if(!value || !input) return;
+    value[0] = Math.max(Math.min(input[0].value,SYS_UNIFORMS["SYS_PASS_TRIANGLEFAN_COUNT"].max),SYS_UNIFORMS["SYS_PASS_TRIANGLEFAN_COUNT"].min);
+    if (value[0] != input[0].value) input[0].value = value[0];
+    uniformValues["SYS_PASS_TRIANGLEFAN_COUNT"] = value;
+  }, nodisplay: true},
+  SYS_PASS_TRIANGLEFAN_ID:      { type: gl.INT,   size: 1, update:(info)=>{
+    let value = SYS_UNIFORMS["SYS_PASS_TRIANGLEFAN_ID"]["value"];
+    if(!value) return;
+    value[0] = info.PTF_ID;
+    uniformValues["SYS_PASS_TRIANGLEFAN_ID"] = value;
+  }, display: (v)=>{return -1;}
+  },
 };
-const uniformTypeMap = { //size: [row (groups), columns]. mat2x4 == 2x vec4
+const UNIFORM_TYPE_MAP = { //size: [row (groups), columns]. mat2x4 == 2x vec4
   [gl.FLOAT]:       { shape: [1,1], label: 'float', type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
   [gl.FLOAT_VEC2]:  { shape: [1,2], label: 'vec2',  type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
   [gl.FLOAT_VEC3]:  { shape: [1,3], label: 'vec3',  type: 'number', array: Float32Array, step: '0.01', parser: (x) => (parseFloat(x.value)) },
@@ -1005,6 +1110,7 @@ void main() {
   uv = position.xy * 0.5 + 0.5;
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }` : `#version 300 es
+#define IS_ENDPOINT (SYS_PASS_LINES_COUNT > 0 && SYS_PASS_LINES_ID >= 0 && gl_VertexID % 2 == 1)
 precision highp float;
 
 uniform mat4 SYS_MVP;
@@ -1020,9 +1126,12 @@ uniform mat4 SYS_MVP;
 //uniform vec3 SYS_CAM_POS;
 //uniform mat4 SYS_LIGHT_TRANSFORM;
 //uniform vec3 SYS_LIGHT_POS;
+
 //uniform int SYS_MODE;
 //uniform int SYS_VERTICES;
 //uniform int SYS_INSTANCES;
+//uniform int SYS_PASS_<MODE>_COUNT;
+//uniform int SYS_PASS_<MODE>_ID;   
 
 in vec4 position;
 out vec2 uv;
@@ -1068,7 +1177,8 @@ document.getElementById("tab-fragment").addEventListener("click", () => {
 updateTabUI(activeShaderType); // initial update
 
 let currentProgramInfo = twgl.createProgramInfo(gl, [defaultVert, defaultFrag]);
-let bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+let currentBuffers = {};
+currentBuffers.primary = twgl.primitives.createXYQuadBufferInfo(gl);
 //console.log(bufferInfo)
 const uniforms = {};
 
@@ -1402,6 +1512,7 @@ function createProgramFromSources(vertSrc, fragSrc) {
 function extractVariables(program) {
   uniformValues = {}; // reset
   attributeValues = {}; // reset
+  currentBuffers.makeDouble = false; //reset... again, BAD DELETE REFACTOR
   
   // setting up system uniforms
   for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["input"] = undefined; sys["value"] = undefined;}
@@ -1416,6 +1527,7 @@ function extractVariables(program) {
     const info = gl.getActiveUniform(program, i);
     if(info && info.name) uniformInfo.push(info); 
     else console.warn(`Malformed uniform ${i} extracted: `, info);
+    if (info.name == DRAW_MODES.lines.multiPass.SYS_COUNT) currentBuffers.makeDouble = true; //BAD DELETE REFACTOR
   }
   const attributeInfo = [{name:"vertex count",type:gl.UNSIGNED_INT_VEC3, size:1}];
   for (let i = 0; i < numAttributes; i++) {
@@ -1487,9 +1599,9 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
     const isInstanced = (variableType == "attribute" && instanceCount > 0 && saved[variableName] && saved[variableName]["divisor"] > 0);
     
     if(isSys && info.type != SYS_UNIFORMS[variableName]["type"]) {
-      throw new Error(`System ${variableType} ${variableName} must be of type ${uniformTypeMap[SYS_UNIFORMS[variableName]["type"]]["label"]}`);
+      throw new Error(`System ${variableType} ${variableName} must be of type ${UNIFORM_TYPE_MAP[SYS_UNIFORMS[variableName]["type"]]["label"]}`);
     }
-    const typeInfo = uniformTypeMap[info.type];
+    const typeInfo = UNIFORM_TYPE_MAP[info.type];
     if (!typeInfo) continue; // skip unsupported types for now
     // shape: always length 3. [arrayElemCount, rowCountPerGroup, colCount]
     // note: gl.FLOAT_MAT2x3 means two vec3s, which in our representation are rows. So: 2 rows of 3 columns
@@ -1686,8 +1798,11 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
       else input.value = value[j];
 
       if(isSys){
-        input.disabled = true;
-        input.title = `Built-in system ${variableType} (read-only)`;
+        input.disabled = !SYS_UNIFORMS[variableName].editable;
+        if (SYS_UNIFORMS[variableName].min !== undefined) input.min = SYS_UNIFORMS[variableName].min;
+        if (SYS_UNIFORMS[variableName].max !== undefined) input.max = SYS_UNIFORMS[variableName].max;
+        if (SYS_UNIFORMS[variableName].step !== undefined) input.step = SYS_UNIFORMS[variableName].step;
+        input.title = `Built-in system ${variableType} ${input.disabled?"(read-only)":""}`;
         SYS_UNIFORMS[variableName]["input"][j] = input; ///TODO ***
       }
       else {
@@ -1726,16 +1841,27 @@ function buildVariableEditor(variableType,allSavedVariables,saved,extractedInfo,
 // this entire function is. SUCH a bad way of doing things there NEEDS to be a better way. Its unreal
 // For starters: there should not be a separate array created here, OBVIOUSLY. God.
 function buildAttributeBuffers() {
-  const arrays = {};
+  const primaryAttributeArrays = {};
+  const x2AttributeArrays = {};
   for (const [name, attr] of Object.entries(attributeValues)) {
-    arrays[name] = {
+    primaryAttributeArrays[name] = {
       numComponents: attr.length / ( (attr.divisor >= 1) ? instanceCount / attr.divisor : vertexCount ) ,
       data: attr,
       type: attr.type,
       divisor: attr.divisor
     };
+    // I hate this I hate this I hate this BAD DELETE REFACTOR
+    if(currentBuffers.makeDouble && name != "Triangles:") {
+      x2AttributeArrays[name] = (attr.divisor >= 1)? primaryAttributeArrays[name] : {
+        numComponents: attr.length / vertexCount ,
+        data: duplicateAttributeValues(attr, attr.length / vertexCount),
+        type: attr.type,
+        divisor: 0
+      };
+    } 
   }
-  bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+  currentBuffers.primaryBufferInfo = twgl.createBufferInfoFromArrays(gl, primaryAttributeArrays);
+  if(currentBuffers.makeDouble) currentBuffers.x2BufferInfo = twgl.createBufferInfoFromArrays(gl, x2AttributeArrays);
 }
 
 document.getElementById("compile").addEventListener("click", () => {
@@ -1941,20 +2067,56 @@ function render(time) {
     const vp = twgl.m4.multiply(proj, view);
     const mvp = twgl.m4.multiply(vp, model);
 
+    const info = {"T":time - timeStart, "DT":dt, "MVP":mvp, "M": model, "V": view, "P": proj, "C": cam, "L": light, "PL_ID": -1, "PP_ID": -1};
+
     // Uniforms
-    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"]({"T":time - timeStart, "DT":dt, "MVP":mvp, "M": model, "V": view, "P": proj, "C": cam, "L": light}); }
+    for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"](info); }
     Object.assign(uniforms, uniformValues); // add uniforms
+
+    // Buffers
+    let bufferInfo = currentBuffers.primaryBufferInfo;
 
     gl.useProgram(currentProgramInfo.program);
     twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
     twgl.setUniforms(currentProgramInfo, uniforms);
     twgl.drawBufferInfo(gl, bufferInfo,DRAW_MODES[drawMode].glEnum,bufferInfo.numElements,0,instanceCount > 0? instanceCount : undefined);
     
+    // Multiple passes: render lines, points, etc.
+    const oldDrawMode = drawMode;
+    let multipass = false;
+    for (const [modeKey, modeObj] of Object.entries(DRAW_MODES)) {
+      if(modeObj.multiPass && uniformValues[modeObj.multiPass.SYS_COUNT] >= 1) {
+        multipass = true;
+        for (let i = 0; i < uniformValues[modeObj.multiPass.SYS_COUNT]; i++) {
+          // Set uniforms and other info for pass
+          drawMode = modeKey;
+          info[modeObj.multiPass.INFO_ID] = i;
+          bufferInfo = (modeKey == "lines")? currentBuffers.x2BufferInfo : currentBuffers.primaryBufferInfo; // BAD DELETE REFACTOR
+          // TODO: make x2 vertices the dumb way and see if it works
+          for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"](info); }
+          Object.assign(uniforms, uniformValues); 
+          // Render
+          gl.useProgram(currentProgramInfo.program);
+          twgl.setBuffersAndAttributes(gl, currentProgramInfo, bufferInfo);
+          twgl.setUniforms(currentProgramInfo, uniforms);
+          twgl.drawBufferInfo(gl, bufferInfo,DRAW_MODES[drawMode].glEnum,bufferInfo.numElements,0,instanceCount > 0? instanceCount : undefined);
+        }
+        info[modeObj.multiPass.INFO_ID] = -1; //reset
+      }
+    }
+    if(multipass) {
+      // Put uniforms and other values back
+      drawMode = oldDrawMode; 
+      for (const [_,sys] of Object.entries(SYS_UNIFORMS)) { sys["update"](info); }
+      Object.assign(uniforms, uniformValues);
+    }
+    
+    // Rendering has finished
     requestAnimationFrame(render);
     rendering = true;
     for (const [_,sys] of Object.entries(SYS_UNIFORMS)) {
       
-      if(sys.value && sys.input) { for (const i in sys["input"]) {
+      if(sys.value && sys.input && !sys.nodisplay) { for (const i in sys["input"]) {
         if(sys.display) sys["input"][i].value = sys.display(sys.value[i]); 
         else sys["input"][i].value = Math.round(1000*sys.value[i])/1000; 
         }
@@ -2401,6 +2563,46 @@ function convertImageToBase64(file){
     // Start the asynchronous read operation
     reader.readAsDataURL(file);
   });
+}
+
+// i would love to delete this. or do it any other way, really. transform feedback etc.
+function duplicateAttributeValues(src, numComponents) {
+  let isTyped = null;
+  if ((ArrayBuffer.isView(src) && !(src instanceof DataView))) isTyped= true;
+  else if (src.type) isTyped = false;
+  else throw new TypeError("src must be a typed array");
+
+  if (!Number.isInteger(numComponents) || numComponents <= 0) {
+    throw new RangeError("numComponents must be a positive integer");
+  }
+
+  if (src.length % numComponents !== 0) {
+    throw new RangeError("src length must be divisible by numComponents");
+  }
+
+  const TypedArrayCtor = src.constructor;
+  const dst = isTyped? new TypedArrayCtor(src.length * 2) : new Array(src.length * 2);
+  
+  const numValues = src.length / numComponents;
+
+  for (let i = 0; i < numValues; i++) {
+    const srcOffset = i * numComponents;
+    const dstOffset = i * numComponents * 2;
+
+    const value = src[isTyped? "subarray" : "slice"](srcOffset, srcOffset + numComponents);
+
+    if (isTyped) {
+      dst.set(value, dstOffset);
+      dst.set(value, dstOffset + numComponents);
+    } else {
+      for (let i = 0; i < value.length; i++) {
+        dst[dstOffset + i] = value[i];
+        dst[dstOffset + numComponents + i] = value[i];
+      }
+    }
+  }
+
+  return dst;
 }
 
 </script>

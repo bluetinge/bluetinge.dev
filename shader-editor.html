@@ -60,6 +60,22 @@
       padding: 0.5em;
       overflow-y: auto;
     }
+    
+    #editor {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      font-family: monospace;
+      font-size: 13px;
+      background: #111;
+      color: #eee;
+      border: none;
+      outline: none;
+      padding: 0em;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: slategrey #282c34;
+    }
 
     button {
       background: #333;
@@ -102,7 +118,6 @@
     }
     
 #uniform-panel {
-    
       overflow: auto;
       min-height: 10%;
       max-height: 80%;
@@ -111,6 +126,7 @@
       background: #1b1b1b;
       border-top: 1px solid #333;
       overflow-y: auto;
+    scrollbar-color: gray #222222;
       /*flex: 0 0 30%; /* Start at 30% tall */
     }
     
@@ -478,8 +494,8 @@
         <button id="tab-vertex" class="shader-tab">Vertex Shader</button>
         <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
       </div>
-      <textarea id="shader" style="flex: 1; min-height: 0;"></textarea>
-      <!-- <div id="editor" style="flex: 1; min-height: 0;"></div> -->
+      <!--<textarea id="shader" style="flex: 1; min-height: 0;"></textarea>-->
+      <div id="editor" style="flex: 1; min-height: 0;"></div>
       <button id="compile">Compile Shader</button>
       <div id="log"></div>
       <div id="uniform-divider" class="divider row-divider"></div>
@@ -533,37 +549,13 @@
   </div>
 </div>
 
-<!-- <script type="module"> -->
-  <!-- import { EditorView, basicSetup } from "https://esm.sh/@codemirror/basic-setup@0.20.2?pin=v123"; -->
-  <!-- import { EditorState } from "https://esm.sh/@codemirror/state@0.19.1?pin=v123"; -->
-  <!-- import { cpp } from "https://esm.sh/@codemirror/lang-cpp@0.20.1?pin=v123"; -->
-  <!-- import { oneDark } from "https://esm.sh/@codemirror/theme-one-dark@0.19.6?pin=v123"; -->
-
-  <!-- window.initCodeMirror = function(startValue, onChange) { -->
-    <!-- const editor = new EditorView({ -->
-      <!-- state: EditorState.create({ -->
-        <!-- doc: startValue, -->
-        <!-- extensions: [ -->
-          <!-- basicSetup, -->
-          <!-- cpp(), -->
-          <!-- oneDark, -->
-          <!-- EditorView.updateListener.of((v) => { -->
-            <!-- if (v.docChanged) { -->
-              <!-- onChange(editor.state.doc.toString()); -->
-            <!-- } -->
-          <!-- }) -->
-        <!-- ] -->
-      <!-- }), -->
-      <!-- parent: document.getElementById("editor") -->
-    <!-- }); -->
-    <!-- return editor; -->
-  <!-- }; -->
-<!-- </script> -->
-
-
 <!--<script language="javascript" src="lz-string.js"></script>-->
 <script type="module">
 import * as twgl from './twgl-full.module.js';
+import {
+  initCodeMirror
+} from "./glsl-codemirror.js";
+
 
 // TODOLIST
 // Variables:
@@ -693,7 +685,7 @@ if (teachingMode && unlockLevel < 2) {
   document.getElementById("tab-fragment").style.display = "None";
   
   let func = null;
-  const shad = document.getElementById("shader");
+  const shad = editor.getCode(); // document.getElementById("shader");
   func = function(e) {
     if(shad.value.toLowerCase().includes("reveal")){
       console.log("REVEAL");
@@ -1149,20 +1141,24 @@ let fragShaderCode = localStorage.getItem("frag_shader_code") || defaultFrag;
 let vertShaderCode = localStorage.getItem("vert_shader_code") || defaultVert;
 let activeShaderType = localStorage.getItem("active_shader_type") || "fragment"; // "vertex" or "fragment"
 
-//let editor = initCodeMirror(shaderCode, (newCode) => {
-//  shaderCode = newCode;
-//});
-document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+const editor = initCodeMirror(
+  document.getElementById("editor"),
+  (activeShaderType === "vertex" ? vertShaderCode : fragShaderCode),
+  (value) => console.log(value)
+);
+//document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
 
 function updateTabUI(newValue) {
   // save existing code
-  if(activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
-  else fragShaderCode = document.getElementById("shader").value;
+  if(activeShaderType === "vertex") vertShaderCode = editor.getCode();//document.getElementById("shader").value;
+  else fragShaderCode = 
+  editor.getCode(); // document.getElementById("shader").value;
   // toggle tab
   activeShaderType = newValue;
   document.getElementById("tab-vertex").classList.toggle("active", activeShaderType === "vertex");
   document.getElementById("tab-fragment").classList.toggle("active", activeShaderType === "fragment");
-  document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+  editor.setCode(activeShaderType === "vertex" ? vertShaderCode : fragShaderCode);
+  //document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
   localStorage.setItem("active_shader_type",activeShaderType)
 }
 
@@ -1867,8 +1863,8 @@ function buildAttributeBuffers() {
 document.getElementById("compile").addEventListener("click", () => {
 
   // update current code
-  if (activeShaderType === "vertex") vertShaderCode = document.getElementById("shader").value;
-  else fragShaderCode = document.getElementById("shader").value;
+  if (activeShaderType === "vertex") vertShaderCode =  editor.getCode(); // document.getElementById("shader").value;
+  else fragShaderCode = editor.getCode(); // document.getElementById("shader").value;
 
   // Compile with both shaders
   createProgramFromSources(vertShaderCode, fragShaderCode);

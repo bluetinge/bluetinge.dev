@@ -1,0 +1,1254 @@
+// CodeMirror 6 stream-language support for GLSL ES 3.00.
+// Adapted from the supplied Notepad++ GLSL user-defined language.
+
+import {
+  LanguageSupport,
+  StreamLanguage,
+  syntaxHighlighting,
+  HighlightStyle,
+  indentUnit,
+  foldService
+} from "https://esm.sh/@codemirror/language@6.11.3";
+
+import {
+  Tag,
+  tags
+} from "https://esm.sh/@lezer/highlight@1.2.1";
+
+function words(text) {
+  return new Set(
+    text
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+  );
+}
+
+const uniformNameTag = Tag.define(tags.variableName);
+const attributeNameTag = Tag.define(tags.variableName);
+const varyingNameTag = Tag.define(tags.variableName);
+const outputNameTag = Tag.define(tags.variableName);
+const constantNameTag = Tag.define(tags.variableName);
+const functionNameTag = Tag.define(tags.variableName);
+const builtinNameTag = Tag.define(tags.variableName);
+
+const qualifiers = words(`
+  const
+  uniform
+  buffer
+  shared
+  attribute
+  varying
+  coherent
+  volatile
+  restrict
+  readonly
+  writeonly
+  layout
+  centroid
+  flat
+  smooth
+  noperspective
+  patch
+  sample
+  invariant
+  precise
+  in
+  out
+  inout
+  lowp
+  mediump
+  highp
+  precision
+`);
+
+const controlKeywords = words(`
+  break
+  continue
+  do
+  for
+  while
+  switch
+  case
+  default
+  if
+  else
+  discard
+  return
+  struct
+  subroutine
+`);
+
+const scalarTypes = words(`
+  void
+  bool
+  int
+  uint
+  float
+  double
+  atomic_uint
+`);
+
+const vectorTypes = words(`
+  vec2
+  vec3
+  vec4
+
+  ivec2
+  ivec3
+  ivec4
+
+  uvec2
+  uvec3
+  uvec4
+
+  bvec2
+  bvec3
+  bvec4
+
+  dvec2
+  dvec3
+  dvec4
+`);
+
+const matrixTypes = words(`
+  mat2
+  mat3
+  mat4
+
+  mat2x2
+  mat2x3
+  mat2x4
+
+  mat3x2
+  mat3x3
+  mat3x4
+
+  mat4x2
+  mat4x3
+  mat4x4
+
+  dmat2
+  dmat3
+  dmat4
+
+  dmat2x2
+  dmat2x3
+  dmat2x4
+
+  dmat3x2
+  dmat3x3
+  dmat3x4
+
+  dmat4x2
+  dmat4x3
+  dmat4x4
+`);
+
+const samplerTypes = words(`
+  sampler1D
+  sampler1DShadow
+  sampler1DArray
+  sampler1DArrayShadow
+
+  isampler1D
+  isampler1DArray
+
+  usampler1D
+  usampler1DArray
+
+  sampler2D
+  sampler2DShadow
+  sampler2DArray
+  sampler2DArrayShadow
+
+  isampler2D
+  isampler2DArray
+
+  usampler2D
+  usampler2DArray
+
+  sampler2DRect
+  sampler2DRectShadow
+  isampler2DRect
+  usampler2DRect
+
+  sampler2DMS
+  isampler2DMS
+  usampler2DMS
+
+  sampler2DMSArray
+  isampler2DMSArray
+  usampler2DMSArray
+
+  sampler3D
+  isampler3D
+  usampler3D
+
+  samplerCube
+  samplerCubeShadow
+  isamplerCube
+  usamplerCube
+
+  samplerCubeArray
+  samplerCubeArrayShadow
+  isamplerCubeArray
+  usamplerCubeArray
+
+  samplerBuffer
+  isamplerBuffer
+  usamplerBuffer
+
+  sampler3DRect
+`);
+
+const imageTypes = words(`
+  image1D
+  iimage1D
+  uimage1D
+
+  image1DArray
+  iimage1DArray
+  uimage1DArray
+
+  image2D
+  iimage2D
+  uimage2D
+
+  image2DArray
+  iimage2DArray
+  uimage2DArray
+
+  image2DRect
+  iimage2DRect
+  uimage2DRect
+
+  image2DMS
+  iimage2DMS
+  uimage2DMS
+
+  image2DMSArray
+  iimage2DMSArray
+  uimage2DMSArray
+
+  image3D
+  iimage3D
+  uimage3D
+
+  imageCube
+  iimageCube
+  uimageCube
+
+  imageCubeArray
+  iimageCubeArray
+  uimageCubeArray
+
+  imageBuffer
+  iimageBuffer
+  uimageBuffer
+`);
+
+const reservedWords = words(`
+  common
+  partition
+  active
+  asm
+  class
+  union
+  enum
+  typedef
+  template
+  this
+  resource
+  goto
+  inline
+  noinline
+  public
+  static
+  extern
+  external
+  interface
+  long
+  short
+  half
+  fixed
+  unsigned
+  superp
+  input
+  output
+  hvec2
+  hvec3
+  hvec4
+  fvec2
+  fvec3
+  fvec4
+  filter
+  sizeof
+  cast
+  namespace
+  using
+`);
+
+const typeNames = new Set([
+  ...scalarTypes,
+  ...vectorTypes,
+  ...matrixTypes,
+  ...samplerTypes,
+  ...imageTypes
+]);
+
+const preprocessorDirectives = words(`
+  define
+  undef
+  if
+  ifdef
+  ifndef
+  else
+  elif
+  endif
+  error
+  pragma
+  extension
+  version
+  line
+`);
+
+const predefinedMacros = words(`
+  __LINE__
+  __VERSION__
+  __FILE__
+  GL_ES
+`);
+
+const specialVariables = words(`
+  gl_DrawID
+  gl_FragCoord
+  gl_FragDepth
+  gl_FrontFacing
+  gl_InstanceID
+  gl_PointCoord
+  gl_PointSize
+  gl_Position
+  gl_VertexID
+
+  gl_MaxVertexAttribs
+  gl_MaxVertexUniformVectors
+  gl_MaxVertexOutputVectors
+  gl_MaxFragmentInputVectors
+  gl_MaxVertexTextureImageUnits
+  gl_MaxCombinedTextureImageUnits
+  gl_MaxTextureImageUnits
+  gl_MaxFragmentUniformVectors
+  gl_MaxDrawBuffers
+  gl_MinProgramTexelOffset
+  gl_MaxProgramTexelOffset
+
+  gl_DepthRangeParameters
+  gl_DepthRange
+`);
+
+const builtinFunctions = words(`
+  radians
+  degrees
+
+  sin
+  cos
+  tan
+  asin
+  acos
+  atan
+
+  sinh
+  cosh
+  tanh
+  asinh
+  acosh
+  atanh
+
+  pow
+  exp
+  log
+  exp2
+  log2
+  sqrt
+  inversesqrt
+
+  abs
+  sign
+  floor
+  trunc
+  round
+  roundEven
+  ceil
+  fract
+  mod
+  modf
+  min
+  max
+  clamp
+  mix
+  step
+  smoothstep
+  isnan
+  isinf
+
+  floatBitsToInt
+  floatBitsToUint
+  intBitsToFloat
+  uintBitsToFloat
+
+  packSnorm2x16
+  unpackSnorm2x16
+  packUnorm2x16
+  unpackUnorm2x16
+  packHalf2x16
+  unpackHalf2x16
+
+  length
+  distance
+  dot
+  cross
+  normalize
+  faceforward
+  reflect
+  refract
+
+  matrixCompMult
+  outerProduct
+  transpose
+  determinant
+  inverse
+
+  lessThan
+  lessThanEqual
+  greaterThan
+  greaterThanEqual
+  equal
+  notEqual
+  any
+  all
+  not
+
+  textureSize
+  texture
+  textureProj
+  textureLod
+  textureOffset
+  texelFetch
+  texelFetchOffset
+  textureProjOffset
+  textureLodOffset
+  textureProjLod
+  textureProjLodOffset
+  textureGrad
+  textureGradOffset
+  textureProjGrad
+  textureProjGradOffset
+
+  dFdx
+  dFdy
+  fwidth
+`);
+
+const operatorRE =
+  /^(?:<<=|>>=|\+\+|--|<<|>>|<=|>=|==|!=|&&|\|\||\^\^|\+=|-=|\*=|\/=|%=|&=|\|=|\^=|##|[+\-*\/%<>=!&|^~?:])/;
+
+const punctuationRE = /^[;,\.\[\]()]/;
+
+const identifierRE = /^[A-Za-z_][A-Za-z0-9_]*/;
+
+function tokenBase(stream, state) {
+  if (stream.sol()) {
+    const indentation = stream.match(/^\s*/, false)?.[0] ?? "";
+
+    if (
+      stream.string
+        .slice(stream.pos + indentation.length)
+        .startsWith("#")
+    ) {
+      stream.eatSpace();
+      stream.next();
+
+      state.inPreprocessor = true;
+      state.expectingPreprocessorDirective = true;
+
+      return "meta";
+    }
+  }
+
+  if (stream.eatSpace()) {
+    return null;
+  }
+
+  if (stream.match("//")) {
+    stream.skipToEnd();
+    return "lineComment";
+  }
+
+  if (stream.match("/*")) {
+    state.inBlockComment = true;
+    return tokenBlockComment(stream, state);
+  }
+
+  if (stream.peek() === '"') {
+    stream.next();
+    state.inString = true;
+    return tokenString(stream, state);
+  }
+
+  // Hexadecimal integer literals.
+  if (stream.match(/^0[xX][0-9A-Fa-f]+[uU]?/)) {
+    return "number";
+  }
+
+  // Decimal and floating-point literals:
+  // 1, 1u, 1.0, .5, 1., 1e-3, 1.0f
+  if (
+    stream.match(
+      /^(?:(?:\d+\.\d*|\.\d+)(?:[eE][+-]?\d+)?[fF]?|\d+[eE][+-]?\d+[fF]?|\d+[uU]?)/
+    )
+  ) {
+    return "number";
+  }
+
+  const identifier = stream.match(identifierRE);
+
+  if (identifier) {
+    const word = identifier[0];
+
+    if (
+      state.inPreprocessor &&
+      state.expectingPreprocessorDirective
+    ) {
+      state.expectingPreprocessorDirective = false;
+
+      if (preprocessorDirectives.has(word)) {
+        return "meta";
+      }
+
+      return "meta";
+    }
+
+    if (word === "true" || word === "false") {
+      return "bool";
+    }
+
+    if (state.depth === 0 && state.paren === 0) {
+      if (word === "uniform") {
+        state.declarationKind = "uniformName";
+        state.declarationSawType = false;
+        return "modifier";
+      }
+
+      if (word === "attribute" || word == "in") { //if vertex...
+        state.declarationKind = "attributeName";
+        state.declarationSawType = false;
+        return "modifier";
+      }
+
+      if (word === "varying" || word == "out") { // in if fragment...
+        state.declarationKind = "varyingName";
+        state.declarationSawType = false;
+        return "modifier";
+      }
+
+      // if (word === "out") {
+        // state.declarationKind = "outputName";
+        // state.declarationSawType = false;
+        // return "modifier";
+      // }
+      
+      if (word === "const") {
+        state.declarationKind = "constantName";
+        state.declarationSawType = false;
+        return "modifier";
+      }
+      
+      if(state.declarationKind === null) {
+        state.declarationKind = "functionName";
+        state.declarationSawType = false;
+      }
+    }
+
+    if (qualifiers.has(word)) {
+      return "modifier";
+    }
+
+    if (controlKeywords.has(word)) {
+      return "keyword";
+    }
+
+    if (typeNames.has(word)) {
+      if (state.declarationKind !== null) {
+        state.declarationSawType = true;
+      }
+
+      return "typeName";
+    }
+
+    if (reservedWords.has(word)) {
+      return "invalid";
+    }
+
+    if (predefinedMacros.has(word)) {
+      return "macroName";
+    }
+
+    if (specialVariables.has(word)) {
+      return "variableName.special";
+    }
+
+    if (builtinFunctions.has(word)) {
+      return "builtinName";
+    }
+
+    if (word === "defined") {
+      return "meta";
+    }
+
+    if (
+      state.declarationKind !== null &&
+      state.declarationSawType
+    ) {
+      const declarationKind = state.declarationKind;
+
+      switch (declarationKind) {
+        case "uniformName":
+          state.uniforms.add(word);
+          break;
+
+        case "attributeName":
+          state.attributes.add(word);
+          break;
+
+        case "varyingName":
+          state.varyings.add(word);
+          break;
+
+        case "outputName":
+          state.outputs.add(word);
+          break;
+          
+        case "constantName":
+          state.constants.add(word);
+          break;
+          
+        case "functionName":
+          state.functions.add(word);
+          break;
+      }
+
+      return declarationKind;
+    }
+    
+    if (state.uniforms.has(word)) {
+      return "uniformName";
+    }
+
+    if (state.attributes.has(word)) {
+      return "attributeName";
+    }
+
+    if (state.varyings.has(word)) {
+      return "varyingName";
+    }
+
+    if (state.outputs.has(word)) {
+      return "outputName";
+    }
+    
+    if (state.constants.has(word)) {
+      return "constantName";
+    }
+    
+    if (state.functions.has(word)) {
+      return "functionName";
+    }
+
+    return "variableName";
+  }
+
+  if(stream.peek() !== ",") {
+    state.declarationKind = null;
+    state.declarationSawType = false;
+  } 
+  if (stream.peek() === "(") {
+    state.paren++;
+  }
+  if (stream.peek() === ")") {
+    state.paren = Math.max(0, state.paren - 1);
+  }
+
+  if (stream.match(operatorRE)) {
+    return "operator";
+  }
+  
+  if (stream.peek() === "{") {
+    stream.next();
+    state.depth++;
+    return "brace";
+  }
+
+  if (stream.peek() === "}") {
+    stream.next();
+    state.depth = Math.max(0, state.depth - 1);
+    return "brace";
+  }
+
+  if (stream.peek() === ";") {
+    stream.next();
+
+    return "punctuation";
+  }
+
+  if (stream.match(punctuationRE)) {
+    return "punctuation";
+  }
+
+  // Ensure malformed or unknown input always advances.
+  stream.next();
+  return null;
+}
+
+function tokenBlockComment(stream, state) {
+  let previous = "";
+
+  while (!stream.eol()) {
+    const current = stream.next();
+
+    if (previous === "*" && current === "/") {
+      state.inBlockComment = false;
+      break;
+    }
+
+    previous = current;
+  }
+
+  return "blockComment";
+}
+
+function tokenString(stream, state) {
+  let escaped = false;
+
+  while (!stream.eol()) {
+    const current = stream.next();
+
+    if (current === '"' && !escaped) {
+      state.inString = false;
+      break;
+    }
+
+    if (current === "\\" && !escaped) {
+      escaped = true;
+    } else {
+      escaped = false;
+    }
+  }
+
+  return "string";
+}
+
+export const glslLanguage = StreamLanguage.define({
+  name: "glsl-es-300",
+
+  tokenTable: {
+    uniformName: uniformNameTag,
+    attributeName: attributeNameTag,
+    varyingName: varyingNameTag,
+    outputName: outputNameTag,
+    constantName: constantNameTag,
+    functionName: functionNameTag,
+    builtinName: builtinNameTag
+  },
+
+  startState() {
+    return {
+      inBlockComment: false,
+      inString: false,
+      inPreprocessor: false,
+      expectingPreprocessorDirective: false,
+      depth: 0,
+      paren: 0,
+
+      declarationKind: null,
+      declarationSawType: false,
+      
+      uniforms: new Set(),
+      attributes: new Set(),
+      varyings: new Set(),
+      outputs: new Set(),
+      constants: new Set(),
+      functions: new Set()
+    };
+  },
+
+  copyState(state) {
+    return { 
+      ...state,
+      uniforms: new Set(state.uniforms),
+      attributes: new Set(state.attributes),
+      varyings: new Set(state.varyings),
+      outputs: new Set(state.outputs),
+      constants: new Set(state.constants),
+      functions: new Set(state.functions)
+    };
+  },
+
+  token(stream, state) {
+    if (stream.sol()) {
+      state.inPreprocessor = false;
+      state.expectingPreprocessorDirective = false;
+    }
+
+    if (state.inBlockComment) {
+      return tokenBlockComment(stream, state);
+    }
+
+    if (state.inString) {
+      return tokenString(stream, state);
+    }
+
+    return tokenBase(stream, state);
+  },
+
+  indent(state, textAfter, context) {
+    const closesBlock = /^\s*}/.test(textAfter);
+
+    return (
+      Math.max(
+        0,
+        state.depth - (closesBlock ? 1 : 0)
+      ) * context.unit
+    );
+  },
+
+  languageData: {
+    commentTokens: {
+      line: "//",
+      block: {
+        open: "/*",
+        close: "*/"
+      }
+    },
+
+    closeBrackets: {
+      brackets: [
+        "(",
+        "[",
+        "{",
+        "'",
+        '"'
+      ]
+    },
+
+    indentOnInput: /^\s*}$/
+  }
+});
+
+function findFoldStart(text, lineStart, lineEnd) {
+  let inString = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let escaped = false;
+
+  for (let position = 0; position < lineEnd; position++) {
+    const current = text[position];
+    const next = text[position + 1];
+
+    if (inLineComment) {
+      if (current === "\n") {
+        inLineComment = false;
+      }
+
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === "*" && next === "/") {
+        inBlockComment = false;
+        position++;
+      }
+
+      continue;
+    }
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (current === "\\") {
+        escaped = true;
+      } else if (current === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (current === "/" && next === "/") {
+      inLineComment = true;
+      position++;
+      continue;
+    }
+
+    if (current === "/" && next === "*") {
+      if (position >= lineStart) {
+        return {
+          type: "comment",
+          position
+        };
+      }
+
+      inBlockComment = true;
+      position++;
+      continue;
+    }
+
+    if (current === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (current === "{" && position >= lineStart) {
+      return {
+        type: "brace",
+        position
+      };
+    }
+  }
+
+  return null;
+}
+
+function findBraceFoldEnd(text, openingPosition) {
+  let depth = 1;
+  let inString = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let escaped = false;
+
+  for (
+    let position = openingPosition + 1;
+    position < text.length;
+    position++
+  ) {
+    const current = text[position];
+    const next = text[position + 1];
+
+    if (inLineComment) {
+      if (current === "\n") {
+        inLineComment = false;
+      }
+
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === "*" && next === "/") {
+        inBlockComment = false;
+        position++;
+      }
+
+      continue;
+    }
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (current === "\\") {
+        escaped = true;
+      } else if (current === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (current === "/" && next === "/") {
+      inLineComment = true;
+      position++;
+      continue;
+    }
+
+    if (current === "/" && next === "*") {
+      inBlockComment = true;
+      position++;
+      continue;
+    }
+
+    if (current === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (current === "{") {
+      depth++;
+      continue;
+    }
+
+    if (current === "}") {
+      depth--;
+
+      if (depth === 0) {
+        return position;
+      }
+    }
+  }
+
+  return null;
+}
+
+function findCommentFoldEnd(text, openingPosition) {
+  const closingPosition = text.indexOf(
+    "*/",
+    openingPosition + 2
+  );
+
+  return closingPosition === -1
+    ? null
+    : closingPosition + 2;
+}
+
+export const glslFolding = foldService.of(
+  (state, lineStart, lineEnd) => {
+    const text = state.doc.toString();
+
+    const start = findFoldStart(
+      text,
+      lineStart,
+      lineEnd
+    );
+
+    if (!start) {
+      return null;
+    }
+
+    const end =
+      start.type === "brace"
+        ? findBraceFoldEnd(text, start.position)
+        : findCommentFoldEnd(text, start.position);
+
+    if (end === null) {
+      return null;
+    }
+
+    // Only offer a fold when the range spans multiple lines.
+    const startLine = state.doc.lineAt(start.position);
+    const endLine = state.doc.lineAt(end);
+
+    if (startLine.number === endLine.number) {
+      return null;
+    }
+
+    if (start.type === "brace") {
+      return {
+        // Preserve the opening brace.
+        from: start.position + 1,
+
+        // Preserve the closing brace.
+        to: end
+      };
+    }
+
+    return {
+      // Preserve the opening /* marker.
+      from: start.position + 2,
+
+      // Preserve the closing */ marker.
+      to: end - 2
+    };
+  }
+);
+
+export function glslES300() {
+  return new LanguageSupport(
+    glslLanguage,
+    [
+      indentUnit.of("  "),
+      //glslFolding
+    ]
+  );
+}
+
+// This preserves compatibility with:
+//
+// import { glsl } from "./glsl-es-3-syntax.js";
+//
+// extensions: [
+//   basicSetup,
+//   glsl,
+//   oneDark
+// ]
+export const glsl = glslES300();
+
+// Optional colors approximating the supplied Notepad++ UDL.
+// Add this after `oneDark` if you want these colors to override
+// the theme's normal syntax colors.
+export const glslNotepadPlusHighlightStyle =
+  HighlightStyle.define([
+    {
+      tag: tags.lineComment,
+      color: "#58ABAB",
+      fontStyle: "italic"
+    },
+    {
+      tag: tags.blockComment,
+      color: "#72C4C4",
+      fontStyle: "italic"
+    },
+    {
+      tag: [
+        tags.variableName,
+        tags.propertyName
+      ],
+      color: "#FFFFFF"
+    },
+    {
+      tag: tags.number,
+      color: "#80FFFF",
+      fontWeight: "bold"
+    },
+    {
+      tag: [
+        tags.keyword,
+        tags.modifier,
+        tags.typeName,
+        tags.bool
+      ],
+      color: "#80FF80",
+      fontWeight: "bold"
+    },
+    {
+      tag: tags.meta,
+      color: "#FF8040",
+      fontWeight: "bold"
+    },
+    {
+      tag: tags.macroName,
+      color: "#B200B2"
+    },
+    {
+      tag: tags.special(tags.variableName),
+      color: "#FFAA37",
+      fontWeight: "bold"
+    },
+    {
+      tag: builtinNameTag,
+      color: "#FFFF80",
+      fontWeight: "bold"
+    },
+    {
+      tag: uniformNameTag,
+      color: "#80FFFF"
+    },
+    {
+      tag: attributeNameTag,
+      color: "#FFA54A",
+    },
+    {
+      tag: varyingNameTag,
+      color: "#EFA6FF",
+    },
+    {
+      tag: outputNameTag,
+      color: "#EFA6FF",
+    },
+    {
+      tag: constantNameTag,
+      color: "#CCC3B4",
+      fontWeight: "bold"
+    },
+    {
+      tag: functionNameTag,
+      color: "#FFFFFF",
+      fontWeight: "bold"
+    },
+    {
+      tag: [
+        tags.operator,
+        tags.brace,
+        tags.paren,
+        tags.squareBracket,
+        tags.punctuation
+      ],
+      color: "#AFAF61",
+      fontWeight: "bold"
+    },
+    {
+      tag: tags.string,
+      color: "#FFFF80"
+    },
+    {
+      tag: tags.invalid,
+      textDecoration: "underline"
+    }
+  ]);
+
+export const glslNotepadPlusTheme =
+  syntaxHighlighting(
+    glslNotepadPlusHighlightStyle
+  );
+  
+  
+// The actual editor
+
+import {
+  EditorView,
+  basicSetup
+} from "https://esm.sh/codemirror@6.0.2";
+
+import {
+  EditorState
+} from "https://esm.sh/@codemirror/state@6.7.1";
+
+import {
+  oneDark
+} from "https://esm.sh/@codemirror/theme-one-dark@6.1.3";
+    
+export const initCodeMirror = function (parent, startValue, onChange) {
+  const editor = new EditorView({
+    state: EditorState.create({
+      doc: startValue,
+      extensions: [
+        basicSetup,
+        oneDark,
+        glsl,
+        glslNotepadPlusTheme,
+        EditorView.lineWrapping,
+
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            onChange?.(update.state.doc.toString());
+          }
+        })
+      ]
+    }),
+
+    parent: parent
+  });
+
+  return {
+    view: editor,
+
+    getCode() {
+      return editor.state.doc.toString();
+    },
+
+    setCode(code) {
+      editor.dispatch({
+        changes: {
+          from: 0,
+          to: editor.state.doc.length,
+          insert: code
+        }
+      });
+    },
+
+    focus() {
+      editor.focus();
+    },
+
+    destroy() {
+      editor.destroy();
+    }
+  };
+};

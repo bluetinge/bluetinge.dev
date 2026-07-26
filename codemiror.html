@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CodeMirror test</title>
+
+  <style>
+    #editor {
+      border: 1px solid #aaa;
+      max-width: 800px;
+      margin: 2rem auto;
+    }
+
+    .cm-editor {
+      min-height: 250px;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor"></div>
+
+  <script type="module">
+
+    import {
+      initCodeMirror
+    } from "./glsl-codemirror.js";
+
+
+window.editor = initCodeMirror(
+  document.getElementById("editor"),
+  "sd",
+  (value) => console.log(value)
+);
+
+  </script>
+</body>
+</html>

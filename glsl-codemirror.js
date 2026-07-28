@@ -31,6 +31,11 @@ const outputNameTag = Tag.define(tags.variableName);
 const constantNameTag = Tag.define(tags.variableName);
 const functionNameTag = Tag.define(tags.variableName);
 const builtinNameTag = Tag.define(tags.variableName);
+const paramNameTag = Tag.define(tags.variableName);
+const localNameTag = Tag.define(tags.variableName);
+const structNameTag = Tag.define(tags.typeName);
+const unknownMetaTag = Tag.define(tags.meta);
+
 
 const qualifiers = words(`
   const
@@ -313,6 +318,11 @@ const preprocessorDirectives = words(`
   line
 `);
 
+const preprocessorSyntax = words(`
+  defined
+  es
+`)
+
 const predefinedMacros = words(`
   __LINE__
   __VERSION__
@@ -457,6 +467,8 @@ const punctuationRE = /^[;,\.\[\]()]/;
 
 const identifierRE = /^[A-Za-z_][A-Za-z0-9_]*/;
 
+const swizzleRE = /^([w-z]{1,4}|[r|g|b|a]{1,4}|[s|t|p|q]{1,4})$/;
+
 function tokenBase(stream, state) {
   if (stream.sol()) {
     const indentation = stream.match(/^\s*/, false)?.[0] ?? "";
@@ -498,6 +510,7 @@ function tokenBase(stream, state) {
 
   // Hexadecimal integer literals.
   if (stream.match(/^0[xX][0-9A-Fa-f]+[uU]?/)) {
+    if(state.inPreprocessor && !state.expectingPreprocessorDirective) return "meta";
     return "number";
   }
 
@@ -508,6 +521,7 @@ function tokenBase(stream, state) {
       /^(?:(?:\d+\.\d*|\.\d+)(?:[eE][+-]?\d+)?[fF]?|\d+[eE][+-]?\d+[fF]?|\d+[uU]?)/
     )
   ) {
+    if(state.inPreprocessor && !state.expectingPreprocessorDirective) return "meta";
     return "number";
   }
 
@@ -516,58 +530,105 @@ function tokenBase(stream, state) {
   if (identifier) {
     const word = identifier[0];
 
-    if (
-      state.inPreprocessor &&
-      state.expectingPreprocessorDirective
-    ) {
-      state.expectingPreprocessorDirective = false;
+    if ( state.inPreprocessor ) {
+      if( state.expectingPreprocessorDirective ) {
+        state.expectingPreprocessorDirective = false;
 
-      if (preprocessorDirectives.has(word)) {
+        if(word=="define") {
+          state.declarationKind = "macroName";
+        }
+          
+        if (preprocessorDirectives.has(word)) {
+          return "meta";
+        }
+      }
+      
+      if(state.declarationKind == "macroName") {
+        state.declarationKind = null;
+        state.declarationSawType = false;
+        state.macros.add(word);
+        return "macroName";
+      }
+      
+      if(preprocessorSyntax.has(word)) {
         return "meta";
       }
+      
+      if (predefinedMacros.has(word) || state.macros.has(word)) {
+        return "macroName";
+      }
 
-      return "meta";
+      if (specialVariables.has(word)) {
+        return "variableName.special";
+      }
+      
+      return "unknownMeta";
     }
 
+    if (state.depth === 0) {
+      if(state.paren === 0) {
+        if (word == "struct" ) {
+          state.declarationKind = "structName";
+          state.declarationSawType = true;
+          return "keyword";
+        }
+        
+        if (word === "uniform") {
+          state.declarationKind = "uniformName";
+          state.declarationSawType = false;
+          return "modifier";
+        }
+
+        if (word === "attribute" || word == "in") { //if vertex...
+          state.declarationKind = "attributeName";
+          state.declarationSawType = false;
+          return "modifier";
+        }
+
+        if (word === "varying" || word == "out") { // in if fragment...
+          state.declarationKind = "varyingName";
+          state.declarationSawType = false;
+          return "modifier";
+        }
+
+        // if (word === "out") {
+          // state.declarationKind = "outputName";
+          // state.declarationSawType = false;
+          // return "modifier";
+        // }
+        
+        if (word === "const") {
+          state.declarationKind = "constantName";
+          state.declarationSawType = false;
+          return "modifier";
+        }
+        
+        if(state.declarationKind === null) {
+          state.declarationKind = "functionName";
+          state.declarationSawType = false;
+        }
+      }
+      else if(state.declarationKind === "functionName") { // paren > 0
+          state.declarationKind = "paramName";
+          state.declarationSawType = false;
+      }
+    }
+    else if(state.declarationKind === null){
+      state.declarationKind = "localName";
+      state.declarationSawType = false;
+    }
+
+    if(state.macros.has(word)) {
+      return "macroName";
+    }
+    
+    if(state.sawDot) {
+      if(swizzleRE.test(word) || state.properties.has(word)) return "propertyName";
+      else return "invalid"
+    }
+    
     if (word === "true" || word === "false") {
       return "bool";
-    }
-
-    if (state.depth === 0 && state.paren === 0) {
-      if (word === "uniform") {
-        state.declarationKind = "uniformName";
-        state.declarationSawType = false;
-        return "modifier";
-      }
-
-      if (word === "attribute" || word == "in") { //if vertex...
-        state.declarationKind = "attributeName";
-        state.declarationSawType = false;
-        return "modifier";
-      }
-
-      if (word === "varying" || word == "out") { // in if fragment...
-        state.declarationKind = "varyingName";
-        state.declarationSawType = false;
-        return "modifier";
-      }
-
-      // if (word === "out") {
-        // state.declarationKind = "outputName";
-        // state.declarationSawType = false;
-        // return "modifier";
-      // }
-      
-      if (word === "const") {
-        state.declarationKind = "constantName";
-        state.declarationSawType = false;
-        return "modifier";
-      }
-      
-      if(state.declarationKind === null) {
-        state.declarationKind = "functionName";
-        state.declarationSawType = false;
-      }
     }
 
     if (qualifiers.has(word)) {
@@ -578,10 +639,11 @@ function tokenBase(stream, state) {
       return "keyword";
     }
 
-    if (typeNames.has(word)) {
+    if (typeNames.has(word) || state.structs.has(word)) {
       if (state.declarationKind !== null) {
         state.declarationSawType = true;
       }
+      if(state.structs.has(word)) return "structName";
 
       return "typeName";
     }
@@ -592,18 +654,6 @@ function tokenBase(stream, state) {
 
     if (predefinedMacros.has(word)) {
       return "macroName";
-    }
-
-    if (specialVariables.has(word)) {
-      return "variableName.special";
-    }
-
-    if (builtinFunctions.has(word)) {
-      return "builtinName";
-    }
-
-    if (word === "defined") {
-      return "meta";
     }
 
     if (
@@ -634,13 +684,44 @@ function tokenBase(stream, state) {
           break;
           
         case "functionName":
-          state.functions.add(word);
+          if(stream.peek()==="(") state.functions.add(word);
+          else {
+            state.locals[0].add(word);
+            return "localName";
+          }
+          break;
+          
+        case "paramName":
+          if(state.paren > 0 && state.depth == 0) state.params.add(word);
+          break;
+          
+        case "localName":
+          if(state.depth < state.locals.length) state.locals[state.depth].add(word);
+          console.log(state.locals);
+          break;
+          
+        case "structName":
+          state.structs.add(word);
+          break;
+          
+        case "propertyName":
+          state.properties.add(word);
           break;
       }
-
+      // for for loops
+      state.declarationSawType = state.paren==0? null: 0;
       return declarationKind;
     }
     
+    for (const locals of state.locals.toReversed()) {
+      if(locals.has(word)) return "localName";
+      else console.log(locals);
+    }
+
+    if (state.params.has(word)) {
+      return "paramName";
+    }
+
     if (state.uniforms.has(word)) {
       return "uniformName";
     }
@@ -665,18 +746,37 @@ function tokenBase(stream, state) {
       return "functionName";
     }
 
-    return "variableName";
+    if (specialVariables.has(word)) {
+      return "variableName.special";
+    }
+
+    if (builtinFunctions.has(word)) {
+      return "builtinName";
+    }
+
+    return "invalid";
   }
 
-  if(stream.peek() !== ",") {
-    state.declarationKind = null;
-    state.declarationSawType = false;
-  } 
+  if(state.declarationKind !== null) {
+    if(stream.peek() !== "," && stream.peek() !== "]") {
+      if(state.declarationSawType) state.declarationSawType = null;
+    } else if ((state.declarationSawType === null && state.paren===0) || (state.declarationSawType === 0 && state.paren===1)) {
+      state.declarationSawType = true;
+    }
+  }
+
+  if(stream.peek() === ".") {
+    state.sawDot = true;
+  }
+  else state.sawDot = false;
+
   if (stream.peek() === "(") {
     state.paren++;
   }
   if (stream.peek() === ")") {
-    state.paren = Math.max(0, state.paren - 1);
+    state.paren--;
+    if(state.paren==0 && state.declarationKind == "paramName") state.declarationKind = null;
+    if(state.paren < 0) { state.paren = 0; stream.next(); return "invalid"; }
   }
 
   if (stream.match(operatorRE)) {
@@ -686,18 +786,32 @@ function tokenBase(stream, state) {
   if (stream.peek() === "{") {
     stream.next();
     state.depth++;
+    state.locals.push(new Set());
+    state.declarationKind = state.declarationKind === "structName"? "propertyName" : null;
+    state.declarationSawType = false;
     return "brace";
   }
 
   if (stream.peek() === "}") {
     stream.next();
-    state.depth = Math.max(0, state.depth - 1);
+    state.depth--;
+    if(state.depth <= 0) {
+      state.params.clear();
+      if(state.locals.length > 1) state.locals.pop();
+      if(state.depth < 0) {
+        state.depth = 0;
+        return "invalid";
+      }
+    } 
+    state.declarationKind = null;
+    state.declarationSawType = false;
     return "brace";
   }
 
   if (stream.peek() === ";") {
     stream.next();
-
+    state.declarationKind = state.declarationKind === "propertyName"? "propertyName" : null;
+    state.declarationSawType = false;
     return "punctuation";
   }
 
@@ -758,7 +872,11 @@ export const glslLanguage = StreamLanguage.define({
     outputName: outputNameTag,
     constantName: constantNameTag,
     functionName: functionNameTag,
-    builtinName: builtinNameTag
+    builtinName: builtinNameTag,
+    paramName: paramNameTag,
+    localName: localNameTag,
+    structName: structNameTag,
+    unknownMeta: unknownMetaTag
   },
 
   startState() {
@@ -769,6 +887,7 @@ export const glslLanguage = StreamLanguage.define({
       expectingPreprocessorDirective: false,
       depth: 0,
       paren: 0,
+      sawDot: false,
 
       declarationKind: null,
       declarationSawType: false,
@@ -778,7 +897,12 @@ export const glslLanguage = StreamLanguage.define({
       varyings: new Set(),
       outputs: new Set(),
       constants: new Set(),
-      functions: new Set()
+      functions: new Set(),
+      macros: new Set(),
+      params: new Set(),
+      locals: [new Set()],
+      structs: new Set(),
+      properties: new Set()
     };
   },
 
@@ -790,7 +914,12 @@ export const glslLanguage = StreamLanguage.define({
       varyings: new Set(state.varyings),
       outputs: new Set(state.outputs),
       constants: new Set(state.constants),
-      functions: new Set(state.functions)
+      functions: new Set(state.functions),
+      macros: new Set(state.macros),
+      params: new Set(state.params),
+      locals: structuredClone(state.locals),
+      structs: new Set(state.structs),
+      properties: new Set(state.properties),
     };
   },
 
@@ -1118,13 +1247,18 @@ export const glslNotepadPlusHighlightStyle =
       fontWeight: "bold"
     },
     {
+      tag: unknownMetaTag,
+      color: "#FF8040",
+    },
+    {
       tag: tags.meta,
       color: "#FF8040",
       fontWeight: "bold"
     },
     {
       tag: tags.macroName,
-      color: "#B200B2"
+      color: "#FF8040",
+      fontWeight: "bold"
     },
     {
       tag: tags.special(tags.variableName),
@@ -1154,13 +1288,22 @@ export const glslNotepadPlusHighlightStyle =
     },
     {
       tag: constantNameTag,
-      color: "#CCC3B4",
-      fontWeight: "bold"
+      color: "#488cfa",
+      fontWeight: "bold",
+      fontStyle: "italic"
     },
     {
       tag: functionNameTag,
       color: "#FFFFFF",
       fontWeight: "bold"
+    },
+    {
+      tag: paramNameTag,
+      color: "#ffff82",
+    },
+    {
+      tag: localNameTag,
+      color: "#FFFFFF",
     },
     {
       tag: [
@@ -1179,7 +1322,8 @@ export const glslNotepadPlusHighlightStyle =
     },
     {
       tag: tags.invalid,
-      textDecoration: "underline"
+      color: "#CCC3B4"
+      //textDecoration: "underline"
     }
   ]);
 

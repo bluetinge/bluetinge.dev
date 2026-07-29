@@ -460,6 +460,98 @@ const builtinFunctions = words(`
   fwidth
 `);
 
+const CompletionState = {
+  state: null,
+  position: null,
+}
+
+function glslCompletionSource(context) {
+  const state = CompletionState.state;
+  if(!state) return null;
+
+  const word = context.matchBefore(/[A-Za-z_][A-Za-z0-9_]*/);
+
+  if (!context.explicit) {
+    if (!word || word.text.length < 4) {
+      return null;
+    }
+  }
+
+  return {
+    from: word ? word.from : context.pos,
+    options: [
+      ...[...state.uniforms].map((label) => ({
+        label,
+        type: "variable",
+        detail: "uniform"
+      })),
+      
+      ...[...state.attributes].map((label) => ({
+        label,
+        type: "variable",
+        detail: "in"
+      })),
+      
+      ...[...state.varyings].map((label) => ({
+        label,
+        type: "variable",
+        detail: "out"
+      })),
+
+      ...[...state.constants].map((label) => ({
+        label,
+        type: "variable",
+        detail: "const"
+      })),
+      
+      ...[...state.macros].map((label) => ({
+        label,
+        type: "keyword",
+      })),
+
+      ...[...state.params].map((label) => ({
+        label,
+        type: "variable",
+      })),
+      
+      ...[...state.locals[state.locals.length-1]].map((label) => ({
+        label,
+        type: "variable",
+      })),
+
+      ...[...state.structs].map((label) => ({
+        label,
+        type: "typename",
+      })),
+
+      ...[...state.properties].map((label) => ({
+        label,
+        type: "property",
+      })),
+
+      ...[...state.functions].map((label) => ({
+        label,
+        type: "function"
+      })),
+      
+      ...[...typeNames].map((label) => ({
+        label,
+        type: "typename"
+      })),
+      
+      ...[...specialVariables].map((label) => ({
+        label,
+        type: "variable"
+      })),
+      
+      ...[...builtinFunctions].map((label) => ({
+        label,
+        type: "function"
+      })),
+    ]
+  };
+}
+
 const operatorRE =
   /^(?:<<=|>>=|\+\+|--|<<|>>|<=|>=|==|!=|&&|\|\||\^\^|\+=|-=|\*=|\/=|%=|&=|\|=|\^=|##|[+\-*\/%<>=!&|^~?:])/;
 
@@ -697,7 +789,6 @@ function tokenBase(stream, state) {
           
         case "localName":
           if(state.depth < state.locals.length) state.locals[state.depth].add(word);
-          console.log(state.locals);
           break;
           
         case "structName":
@@ -715,7 +806,6 @@ function tokenBase(stream, state) {
     
     for (const locals of state.locals.toReversed()) {
       if(locals.has(word)) return "localName";
-      else console.log(locals);
     }
 
     if (state.params.has(word)) {
@@ -862,6 +952,23 @@ function tokenString(stream, state) {
   return "string";
 }
 
+function copyState(state) {
+  return { 
+    ...state,
+    uniforms: new Set(state.uniforms),
+    attributes: new Set(state.attributes),
+    varyings: new Set(state.varyings),
+    outputs: new Set(state.outputs),
+    constants: new Set(state.constants),
+    functions: new Set(state.functions),
+    macros: new Set(state.macros),
+    params: new Set(state.params),
+    locals: structuredClone(state.locals),
+    structs: new Set(state.structs),
+    properties: new Set(state.properties),
+  };
+}
+
 export const glslLanguage = StreamLanguage.define({
   name: "glsl-es-300",
 
@@ -888,6 +995,7 @@ export const glslLanguage = StreamLanguage.define({
       depth: 0,
       paren: 0,
       sawDot: false,
+      characters: 0,
 
       declarationKind: null,
       declarationSawType: false,
@@ -906,27 +1014,20 @@ export const glslLanguage = StreamLanguage.define({
     };
   },
 
-  copyState(state) {
-    return { 
-      ...state,
-      uniforms: new Set(state.uniforms),
-      attributes: new Set(state.attributes),
-      varyings: new Set(state.varyings),
-      outputs: new Set(state.outputs),
-      constants: new Set(state.constants),
-      functions: new Set(state.functions),
-      macros: new Set(state.macros),
-      params: new Set(state.params),
-      locals: structuredClone(state.locals),
-      structs: new Set(state.structs),
-      properties: new Set(state.properties),
-    };
-  },
+  copyState: copyState,
 
   token(stream, state) {
     if (stream.sol()) {
       state.inPreprocessor = false;
       state.expectingPreprocessorDirective = false;
+      
+      if(CompletionState.position !== null 
+      && state.characters < CompletionState.position
+      && state.characters + stream.string.length + 1 >= CompletionState.position ) {
+        CompletionState.state = copyState(state);
+        console.log(stream.string);
+      }
+      state.characters += stream.string.length + 1;
     }
 
     if (state.inBlockComment) {
@@ -1194,6 +1295,9 @@ export function glslES300() {
     [
       indentUnit.of("  "),
       //glslFolding
+      glslLanguage.data.of({
+        autocomplete: glslCompletionSource
+      })
     ]
   );
 }
@@ -1367,7 +1471,18 @@ export const initCodeMirror = function (parent, startValue, onChange) {
       ]
     }),
 
-    parent: parent
+    parent: parent,
+    dispatchTransactions: (trs) => {
+      CompletionState.position = null;
+      for (const tr of trs) {
+        if (tr.selection && tr.selection.ranges) {
+          for (const r of tr.selection.ranges) {
+            if (r.from) CompletionState.position = r.from;
+          }
+        }
+      }
+      editor.update(trs);
+    }
   });
 
   return {

@@ -1417,7 +1417,7 @@ export const glslHighlightStyle =
     },
     {
       tag: tags.invalid,
-      color: "#FC0394"
+      color: "#FC0394",
       textDecoration: "underline"
     }
   ]);

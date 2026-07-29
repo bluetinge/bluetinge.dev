@@ -1,6 +1,5 @@
-// CodeMirror 6 stream-language support for GLSL ES 3.00.
-// Adapted from the supplied Notepad++ GLSL user-defined language.
-
+// Stream parser based syntax highlighting for GLSL ES 3.0
+// Somewhat hacked together
 import {
   LanguageSupport,
   StreamLanguage,
@@ -1022,10 +1021,9 @@ export const glslLanguage = StreamLanguage.define({
       state.expectingPreprocessorDirective = false;
       
       if(CompletionState.position !== null 
-      && state.characters < CompletionState.position
+      && CompletionState.state === null
       && state.characters + stream.string.length + 1 >= CompletionState.position ) {
         CompletionState.state = copyState(state);
-        console.log(stream.string);
       }
       state.characters += stream.string.length + 1;
     }
@@ -1302,21 +1300,9 @@ export function glslES300() {
   );
 }
 
-// This preserves compatibility with:
-//
-// import { glsl } from "./glsl-es-3-syntax.js";
-//
-// extensions: [
-//   basicSetup,
-//   glsl,
-//   oneDark
-// ]
 export const glsl = glslES300();
 
-// Optional colors approximating the supplied Notepad++ UDL.
-// Add this after `oneDark` if you want these colors to override
-// the theme's normal syntax colors.
-export const glslNotepadPlusHighlightStyle =
+export const glslHighlightStyle =
   HighlightStyle.define([
     {
       tag: tags.lineComment,
@@ -1431,9 +1417,9 @@ export const glslNotepadPlusHighlightStyle =
     }
   ]);
 
-export const glslNotepadPlusTheme =
+export const glslTheme =
   syntaxHighlighting(
-    glslNotepadPlusHighlightStyle
+    glslHighlightStyle
   );
   
   
@@ -1460,7 +1446,7 @@ export const initCodeMirror = function (parent, startValue, onChange) {
         basicSetup,
         oneDark,
         glsl,
-        glslNotepadPlusTheme,
+        glslTheme,
         EditorView.lineWrapping,
 
         EditorView.updateListener.of((update) => {

@@ -34,7 +34,7 @@ const paramNameTag = Tag.define(tags.variableName);
 const localNameTag = Tag.define(tags.variableName);
 const structNameTag = Tag.define(tags.typeName);
 const unknownMetaTag = Tag.define(tags.meta);
-
+const unknownNameTag = Tag.define(tags.variableName);
 
 const qualifiers = words(`
   const
@@ -843,7 +843,7 @@ function tokenBase(stream, state) {
       return "builtinName";
     }
 
-    return "invalid";
+    return "unknownName";
   }
 
   if(state.declarationKind !== null) {
@@ -982,7 +982,8 @@ export const glslLanguage = StreamLanguage.define({
     paramName: paramNameTag,
     localName: localNameTag,
     structName: structNameTag,
-    unknownMeta: unknownMetaTag
+    unknownMeta: unknownMetaTag,
+    unknownName: unknownNameTag
   },
 
   startState() {
@@ -1389,7 +1390,7 @@ export const glslHighlightStyle =
     },
     {
       tag: paramNameTag,
-      color: "#ffff82",
+      color: "#c4ff4d",
     },
     {
       tag: localNameTag,
@@ -1411,9 +1412,13 @@ export const glslHighlightStyle =
       color: "#FFFF80"
     },
     {
+      tag: unknownNameTag,
+      color: "#CCC3B4",
+    },
+    {
       tag: tags.invalid,
-      color: "#CCC3B4"
-      //textDecoration: "underline"
+      color: "#FC0394"
+      textDecoration: "underline"
     }
   ]);
 

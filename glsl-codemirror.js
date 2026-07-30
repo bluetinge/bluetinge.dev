@@ -14,7 +14,8 @@ import {
   HighlightStyle, syntaxHighlighting, bracketMatching,
   indentOnInput, indentUnit,
   foldService, foldGutter, foldKeymap,
-  LanguageSupport, StreamLanguage
+  LanguageSupport, StreamLanguage,
+  syntaxTree
 } from "https://esm.sh/@codemirror/language@6.11.3";
 import {
   defaultKeymap, 
@@ -558,21 +559,37 @@ const builtinFunctions = words(`
 
 const CompletionState = {
   state: null,
+  cachedState: null,
   position: null,
 }
 
 function glslCompletionSource(context) {
-  const state = CompletionState.state;
-  if(!state) return null;
+  if(!CompletionState) return null;
+  const state = CompletionState.state? CompletionState.state : CompletionState.cachedState;
+  if(!CompletionState.state) return null;
+  CompletionState.cachedState = CompletionState.state;
 
+  let node = syntaxTree(context.state).resolveInner(context.pos, -1);
+  
+  // property completion (at least 2 characters typed)
+  const afterDot = context.matchBefore(/\.\w*$/);
+  console.log(afterDot);
+  if (afterDot && (context.explicit || (!node.type.name.includes("Comment") && afterDot.text.length >= 3))) 
+    return {
+      from: afterDot.from + 1,
+      options: [...[...state.properties].map((label) => ({
+          label,
+          type: "property",
+    }))]};
+    
   const word = context.matchBefore(/[A-Za-z_][A-Za-z0-9_]*/);
 
   if (!context.explicit) {
-    if (!word || word.text.length < 4) {
-      return null;
-    }
+    if (!word || word.text.length <= 3) return null;
+    if (node.type.name.includes("Comment")) return null;
+    if (typeNames.has(word.text) || controlKeywords.has(word.text)) return null;
+    if (word.text == "retu" || word.text == "retur") return null; //this is just annoying to me personally
   }
-
   return {
     from: word ? word.from : context.pos,
     options: [
@@ -610,20 +627,22 @@ function glslCompletionSource(context) {
         type: "variable",
       })),
       
-      ...[...state.locals[state.locals.length-1]].map((label) => ({
-        label,
-        type: "variable",
-      })),
+      ...[...state.locals].flatMap((set) =>
+        [...set].map((label) => ({
+          label,
+          type: "variable",
+        })),
+      ),
 
       ...[...state.structs].map((label) => ({
         label,
-        type: "typename",
+        type: "type",
       })),
 
-      ...[...state.properties].map((label) => ({
-        label,
-        type: "property",
-      })),
+      // ...[...state.properties].map((label) => ({
+        // label,
+        // type: "property",
+      // })),
 
       ...[...state.functions].map((label) => ({
         label,
@@ -632,7 +651,7 @@ function glslCompletionSource(context) {
       
       ...[...typeNames].map((label) => ({
         label,
-        type: "typename"
+        type: "type"
       })),
       
       ...[...specialVariables].map((label) => ({
@@ -814,7 +833,7 @@ function tokenBase(stream, state) {
     
     if(state.sawDot) {
       if(swizzleRE.test(word) || state.properties.has(word)) return "propertyName";
-      else return "invalid"
+      else return "unknownName";
     }
     
     if (word === "true" || word === "false") {
@@ -897,7 +916,8 @@ function tokenBase(stream, state) {
           state.properties.add(word);
           break;
       }
-      // for for loops
+      // null can be re-enabled by , and ] if not inside parentheses
+      // 0 can be re-enabled by , and ] if only in ONE parenthesis: i.e., for loops
       state.declarationSawType = state.paren==0? null: 0;
       return declarationKind;
     }
@@ -983,9 +1003,9 @@ function tokenBase(stream, state) {
   if (stream.peek() === "}") {
     stream.next();
     state.depth--;
+    if(state.locals.length > 1) state.locals.pop();
     if(state.depth <= 0) {
       state.params.clear();
-      if(state.locals.length > 1) state.locals.pop();
       if(state.depth < 0) {
         state.depth = 0;
         return "invalid";
@@ -1430,7 +1450,10 @@ export const glslHighlightStyle =
       color: "#FFFFFF"
     },
     {
-      tag: tags.number,
+      tag: [ 
+        tags.number,
+        tags.bool
+      ],
       color: "#80FFFF",
       fontWeight: "bold"
     },
@@ -1438,10 +1461,16 @@ export const glslHighlightStyle =
       tag: [
         tags.keyword,
         tags.modifier,
-        tags.typeName,
-        tags.bool
       ],
       color: "#80FF80",
+      fontWeight: "bold"
+    },
+    {
+      tag: [
+        tags.typeName,
+        structNameTag
+      ],
+      color: "#80FF80", //color: "#9dfc58",
       fontWeight: "bold"
     },
     {
@@ -1497,7 +1526,7 @@ export const glslHighlightStyle =
     },
     {
       tag: paramNameTag,
-      color: "#c4ff4d",
+      color: "#ffd000",
     },
     {
       tag: localNameTag,
@@ -1537,10 +1566,13 @@ export const glslTheme =
 // Toolbar 
 
 async function copySelection(editor) {
-  const { from, to } = editor.state.selection.main;
+  let { from, to } = editor.state.selection.main;
 
   if (from === to) {
-    return;
+    const head = editor.state.selection.main.head;
+    const line = editor.state.doc.lineAt(head);
+    //from = Math.max(line.from-1,0), to = line.to;
+    from = line.from, to = Math.min(line.to + 1, editor.state.doc.length - 1);
   }
 
   const text = editor.state.sliceDoc(from, to);
@@ -1548,10 +1580,13 @@ async function copySelection(editor) {
 }
 
 async function cutSelection(editor) {
-  const { from, to } = editor.state.selection.main;
+  let { from, to } = editor.state.selection.main;
 
   if (from === to) {
-    return;
+    const head = editor.state.selection.main.head;
+    const line = editor.state.doc.lineAt(head);
+    //from = Math.max(line.from-1,0), to = line.to; 
+    from = line.from, to = Math.min(line.to + 1, editor.state.doc.length - 1);
   }
 
   const text = editor.state.sliceDoc(from, to);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Shader Editor</title>
   <style>
     @font-face {
@@ -18,7 +18,7 @@
       position: relative;
       top: 1px;
       display: inline-block;
-      font: normal normal 16px/1 'Glyphicons Halflings';
+      font: normal normal 12px/1 'Glyphicons Halflings';
       -moz-osx-font-smoothing: grayscale;
       -webkit-font-smoothing: antialiased;
       margin-right: 0px;
@@ -30,7 +30,7 @@
       content: '\e159';
     }
     .glyphicon-copy:before {
-      content: '\e205';
+      content: '\e224';/*\e205',⧉*/
     }
     .glyphicon-paste:before {
       content: '\e206';
@@ -114,11 +114,24 @@
     
     .editor-toolbar {
       display: none;
+      align-items: center;
+      gap: 0px;
+      width: 100%;
+      background-color: #282c34;
+    }
+    .editor-toolbar .align-right {
+      margin-left: auto;
     }
 
+    #swap-button {
+      display:none;
+    }
     @media (pointer: coarse) {
       .editor-toolbar {
         display: flex;
+      }
+      #swap-button {
+        display: block;
       }
     }
 
@@ -384,7 +397,7 @@
 
 }
     
-.hide { display: None; }
+.hide { display: None !important; }
 
 #canvas-container {
   position: relative;
@@ -529,31 +542,38 @@
   padding-top:0px;
 }
 
+.tab-row {
+  display: flex; 
+  flex-direction: row; 
+  border-bottom: 1px solid #333;
+}
+
   </style>
 </head>
 <body>
 <div id="container">
   <div id="ui">
     <div id="editor-container" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
-      <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
+      <div id="top-row" class="tab-row">
         <button id="tab-vertex" class="shader-tab">Vertex Shader</button>
         <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
+        <button id="swap-button">Display</button>
       </div>
       <!--<textarea id="shader" style="flex: 1; min-height: 0;"></textarea>-->
-      <div id="editor-toolbar" class="editor-toolbar">
+      <div id="editor-toolbar" class="editor-toolbar code-panel">
         <button type="button" data-command="undo" aria-label="Undo"><span class="glyphicon">↶</span></button>
         <button type="button" data-command="redo" aria-label="Redo"><span class="glyphicon">↷</span></button>
-        <button type="button" data-command="find" aria-label="Find"><span class="glyphicon glyphicon-search"></span></button>
-        <button type="button" data-command="selectnext" aria-label="Select next"><span class="glyphicon">▞</span></button>
+        <button class="align-right" type="button" data-command="selectnext" aria-label="Select next"><span class="glyphicon">▞</span></button>
         <button type="button" data-command="select" aria-label="Select line"><span class="glyphicon">▄</span></button>
         <button type="button" data-command="selectall" aria-label="Select all"><span class="glyphicon">█</span></button>
-        <button type="button" data-command="cut" aria-label="Cut"><span class="glyphicon">✂</span></button>
+        <button class="align-right" type="button" data-command="cut" aria-label="Cut"><span class="glyphicon">✂</span></button>
         <button type="button" data-command="copy" aria-label="Copy"><span class="glyphicon glyphicon-copy"></span></button>
         <button type="button" data-command="paste" aria-label="Paste"><span class="glyphicon glyphicon-paste"></span></button>
+        <button class="align-right" type="button" data-command="find" aria-label="Find" style="margin-right:4px;"><span class="glyphicon glyphicon-search"></span></button>
       </div>
-      <div id="editor" style="flex: 1; min-height: 0;"></div>
-      <button id="compile">Compile Shader</button>
-      <div id="log"></div>
+      <div id="editor" class="code-panel" style="flex: 1; min-height: 0;"></div>
+      <button id="compile" class="code-panel">Compile Shader</button>
+      <div id="log" class="code-panel"></div>
       <div id="uniform-divider" class="divider row-divider"></div>
       <div id="uniform-panel">
         <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
@@ -717,17 +737,50 @@ twgl.resizeCanvasToDisplaySize(gl.canvas);
 let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
 
 // load width
-const savedWidth = localStorage.getItem("shader_ui_width");
-if (savedWidth) {
-  document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
-}
+const is_mobile = matchMedia('(pointer:coarse)').matches;
+let isCanvasVisible = localStorage.getItem("is_canvas_visible");
+if (isCanvasVisible === null) isCanvasVisible = true;
+if(!is_mobile) {
+  const savedWidth = localStorage.getItem("shader_ui_width");
+  if (savedWidth) {
+    document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
+  }
 
-// load height
-const savedHeight = localStorage.getItem("uniforms_height");
-if (savedHeight) {
-  document.getElementById("uniform-panel").style.flexBasis = `${savedHeight}px`;
+  // load height
+  const savedHeight = localStorage.getItem("uniforms_height");
+  if (savedHeight) {
+    document.getElementById("uniform-panel").style.flexBasis = `${savedHeight}px`;
+  }
+  else document.getElementById("uniform-panel").style.flexBasis = `${Math.round(window.innerHeight * 0.4)}px`; // about 278..?
 }
-else document.getElementById("uniform-panel").style.flexBasis = `${Math.round(window.innerHeight * 0.4)}px`; // about 278..?
+else {
+  const ui = document.getElementById("ui");
+  ui.style.maxWidth = "100%";
+  ui.style.flexBasis = "100%";
+  const cc = document.getElementById("canvas-container");
+  document.getElementById("top-row").after(cc);
+  canvas.style.minHeight = window.innerWidth + "px";
+  setCanvasVisibility(false);
+  document.getElementById("swap-button").addEventListener("click", ()=>(setCanvasVisibility(true)));
+  document.getElementById("tab-vertex").addEventListener("click", ()=>(setCanvasVisibility(false)));
+  document.getElementById("tab-fragment").addEventListener("click", ()=>(setCanvasVisibility(false)));
+}
+function setCanvasVisibility(visible) {
+  if (visible) {
+    document.querySelectorAll(".code-panel").forEach((e)=>{
+      e.classList.add("hide");
+    });
+    document.getElementById("canvas-container").classList.remove("hide");
+  }
+  else {
+    document.querySelectorAll(".code-panel").forEach((e)=>{
+      e.classList.remove("hide");
+    });
+    document.getElementById("canvas-container").classList.add("hide");
+  }
+  isCanvasVisible = visible;
+  localStorage.setItem("is_canvas_visible",visible);
+}
 
 let unlockLevel = localStorage.getItem("unlockLevel");
 if (!unlockLevel) {
@@ -1200,7 +1253,7 @@ let activeShaderType = localStorage.getItem("active_shader_type") || "fragment";
 const editor = initCodeMirror(
   document.getElementById("editor"),
   (activeShaderType === "vertex" ? vertShaderCode : fragShaderCode),
-  (value) => console.log(value)
+  (value) => {}//console.log(value)
 );
 //document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
 

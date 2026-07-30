@@ -5,6 +5,41 @@
   <!-- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"> -->
   <title>Shader Editor</title>
   <style>
+    @font-face {
+      font-family: 'Glyphicons Halflings';
+      src: url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.eot');
+      src: url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
+           url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff2') format('woff2'),
+           url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff') format('woff'),
+           url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.ttf') format('truetype'),
+           url('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+    }
+    .glyphicon {
+      position: relative;
+      top: 1px;
+      display: inline-block;
+      font: normal normal 16px/1 'Glyphicons Halflings';
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-font-smoothing: antialiased;
+      margin-right: 0px;
+    }
+    .glyphicon-search:before {
+      content: '\e003';
+    }
+    .glyphicon-collapse-down:before {
+      content: '\e159';
+    }
+    .glyphicon-copy:before {
+      content: '\e205';
+    }
+    .glyphicon-paste:before {
+      content: '\e206';
+    }
+    .glyphicon-text-background:before {
+      content: '\e243';
+    }
+  </style>
+  <style>
     html, body {
       margin: 0;
       padding: 0;
@@ -75,6 +110,16 @@
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: slategrey #282c34;
+    }
+    
+    .editor-toolbar {
+      display: none;
+    }
+
+    @media (pointer: coarse) {
+      .editor-toolbar {
+        display: flex;
+      }
     }
 
     button {
@@ -495,6 +540,17 @@
         <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
       </div>
       <!--<textarea id="shader" style="flex: 1; min-height: 0;"></textarea>-->
+      <div id="editor-toolbar" class="editor-toolbar">
+        <button type="button" data-command="undo" aria-label="Undo"><span class="glyphicon">↶</span></button>
+        <button type="button" data-command="redo" aria-label="Redo"><span class="glyphicon">↷</span></button>
+        <button type="button" data-command="find" aria-label="Find"><span class="glyphicon glyphicon-search"></span></button>
+        <button type="button" data-command="selectnext" aria-label="Select next"><span class="glyphicon">▞</span></button>
+        <button type="button" data-command="select" aria-label="Select line"><span class="glyphicon">▄</span></button>
+        <button type="button" data-command="selectall" aria-label="Select all"><span class="glyphicon">█</span></button>
+        <button type="button" data-command="cut" aria-label="Cut"><span class="glyphicon">✂</span></button>
+        <button type="button" data-command="copy" aria-label="Copy"><span class="glyphicon glyphicon-copy"></span></button>
+        <button type="button" data-command="paste" aria-label="Paste"><span class="glyphicon glyphicon-paste"></span></button>
+      </div>
       <div id="editor" style="flex: 1; min-height: 0;"></div>
       <button id="compile">Compile Shader</button>
       <div id="log"></div>

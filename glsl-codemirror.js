@@ -1,27 +1,111 @@
 // Stream parser based syntax highlighting for GLSL ES 3.0
 // Somewhat hacked together
-import {
-  LanguageSupport,
-  StreamLanguage,
-  syntaxHighlighting,
-  HighlightStyle,
-  indentUnit,
-  foldService
-} from "https://esm.sh/@codemirror/language@6.11.3";
 
+import { 
+  EditorState
+} from "https://esm.sh/@codemirror/state@6.7.1";
 import {
-  Tag,
-  tags
+  EditorView, keymap,  lineNumbers, 
+  highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, 
+  drawSelection, dropCursor,
+  rectangularSelection, crosshairCursor,
+} from "https://esm.sh/@codemirror/view"
+import {
+  HighlightStyle, syntaxHighlighting, bracketMatching,
+  indentOnInput, indentUnit,
+  foldService, foldGutter, foldKeymap,
+  LanguageSupport, StreamLanguage
+} from "https://esm.sh/@codemirror/language@6.11.3";
+import {
+  defaultKeymap, 
+  history, historyKeymap,
+  undo, redo,
+  selectGroupForward, selectLine, selectLineDown, selectAll
+} from "https://esm.sh/@codemirror/commands"
+import {
+  openSearchPanel,
+  closeSearchPanel
+} from "https://esm.sh/@codemirror/search";
+import {
+  searchKeymap, highlightSelectionMatches
+} from "https://esm.sh/@codemirror/search"
+import {
+  autocompletion, completionKeymap,
+  closeBrackets, closeBracketsKeymap
+} from "https://esm.sh/@codemirror/autocomplete"
+import {
+  lintKeymap
+} from "https://esm.sh/@codemirror/lint"
+import {
+  oneDark
+} from "https://esm.sh/@codemirror/theme-one-dark@6.1.3";
+import {
+  Tag,  tags
 } from "https://esm.sh/@lezer/highlight@1.2.1";
 
-function words(text) {
-  return new Set(
-    text
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-  );
+/** Extensions **/
+
+function getExtensions() {
+  return  [
+      // A line number gutter
+      lineNumbers(),
+      // A gutter with code folding markers
+      foldGutter({
+        openText: "▾",
+        closedText: "▸"
+      }),
+      // Replace non-printable characters with placeholders
+      highlightSpecialChars(),
+      // The undo history
+      history(),
+      // Replace native cursor/selection with our own
+      drawSelection(),
+      // Show a drop cursor when dragging over the editor
+      dropCursor(),
+      // Allow multiple cursors/selections
+      EditorState.allowMultipleSelections.of(true),
+      // Re-indent lines when typing specific input
+      indentOnInput(),
+      // Highlight matching brackets near cursor
+      bracketMatching(),
+      // Automatically close brackets
+      closeBrackets(),
+      // Allow alt-drag to select rectangular regions
+      rectangularSelection(),
+      // Change the cursor to a crosshair when holding alt
+      crosshairCursor(),
+      // Style the current line specially
+      highlightActiveLine(),
+      // Style the gutter for current line specially
+      highlightActiveLineGutter(),
+      // Highlight text that matches the selected text
+      highlightSelectionMatches(),
+      keymap.of([
+        // Closed-brackets aware backspace
+        ...closeBracketsKeymap,
+        // A large set of basic bindings
+        ...defaultKeymap,
+        // Search-related keys
+        ...searchKeymap,
+        // Redo/undo keys
+        ...historyKeymap,
+        // Code folding bindings
+        ...foldKeymap,
+        // Autocompletion keys
+        ...completionKeymap,
+        // Keys related to the linter system
+        ...lintKeymap
+      ]),
+    // Autocomplete with GLSL terminology + typed terms
+    autocompletion({
+      override: [glslCompletionSource],
+      activateOnTyping: true
+    }),
+  ];
 }
+
+
+/**Custom tags **/
 
 const uniformNameTag = Tag.define(tags.variableName);
 const attributeNameTag = Tag.define(tags.variableName);
@@ -35,6 +119,17 @@ const localNameTag = Tag.define(tags.variableName);
 const structNameTag = Tag.define(tags.typeName);
 const unknownMetaTag = Tag.define(tags.meta);
 const unknownNameTag = Tag.define(tags.variableName);
+
+/** Language-specific words **/
+
+function words(text) {
+  return new Set(
+    text
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+  );
+}
 
 const qualifiers = words(`
   const
@@ -459,6 +554,8 @@ const builtinFunctions = words(`
   fwidth
 `);
 
+/** Autocomplete **/
+
 const CompletionState = {
   state: null,
   position: null,
@@ -550,6 +647,8 @@ function glslCompletionSource(context) {
     ]
   };
 }
+
+/** Token parsing **/
 
 const operatorRE =
   /^(?:<<=|>>=|\+\+|--|<<|>>|<=|>=|==|!=|&&|\|\||\^\^|\+=|-=|\*=|\/=|%=|&=|\|=|\^=|##|[+\-*\/%<>=!&|^~?:])/;
@@ -951,6 +1050,8 @@ function tokenString(stream, state) {
   return "string";
 }
 
+/** StreamParser and GLSLLanguage **/
+
 function copyState(state) {
   return { 
     ...state,
@@ -1073,6 +1174,8 @@ export const glslLanguage = StreamLanguage.define({
     indentOnInput: /^\s*}$/
   }
 });
+
+/** Fold service **/
 
 function findFoldStart(text, lineStart, lineEnd) {
   let inString = false;
@@ -1288,12 +1391,14 @@ export const glslFolding = foldService.of(
   }
 );
 
+/** Bundle **/
+
 export function glslES300() {
   return new LanguageSupport(
     glslLanguage,
     [
       indentUnit.of("  "),
-      //glslFolding
+      glslFolding,
       glslLanguage.data.of({
         autocomplete: glslCompletionSource
       })
@@ -1302,6 +1407,8 @@ export function glslES300() {
 }
 
 export const glsl = glslES300();
+
+/** Style **/
 
 export const glslHighlightStyle =
   HighlightStyle.define([
@@ -1427,28 +1534,118 @@ export const glslTheme =
     glslHighlightStyle
   );
   
+// Toolbar 
+
+async function copySelection(editor) {
+  const { from, to } = editor.state.selection.main;
+
+  if (from === to) {
+    return;
+  }
+
+  const text = editor.state.sliceDoc(from, to);
+  await navigator.clipboard.writeText(text);
+}
+
+async function cutSelection(editor) {
+  const { from, to } = editor.state.selection.main;
+
+  if (from === to) {
+    return;
+  }
+
+  const text = editor.state.sliceDoc(from, to);
+
+  await navigator.clipboard.writeText(text);
+
+  editor.dispatch({
+    changes: {
+      from,
+      to,
+      insert: ""
+    },
+    selection: {
+      anchor: from
+    },
+    userEvent: "delete.cut"
+  });
+
+  editor.focus();
+}
+
+async function makeSelection(editor) {
+  const { from, to } = editor.state.selection.main;
+
+  if (from === to) {
+    selectLine(editor);
+  }
+  else selectLineDown(editor);
+}
+
+async function pasteAtSelection(editor) {
+  const text = await navigator.clipboard.readText();
+
+  editor.dispatch(
+    editor.state.replaceSelection(text)
+  );
+
+  editor.focus();
+}
+
+function connectEditorToolbar(editor) {
+  const commands = {
+    undo,
+    redo,
+    find: openSearchPanel,
+    selectnext: selectGroupForward,
+    select: makeSelection,
+    selectall: selectAll,
+    cut: cutSelection,
+    copy: copySelection,
+    paste: pasteAtSelection
+  };
+
+  const toolbar = document.getElementById("editor-toolbar");
+
+  if(toolbar) {
+    toolbar.addEventListener("pointerdown", async (event) => {
+      const button = event.target.closest("[data-command]");
+
+      if (!button) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const name = button.dataset.command;
+      const command = commands[name];
+
+      if (!command) {
+        return;
+      }
+
+      try {
+        await command(editor);
+      } catch (error) {
+        console.error(`${name} failed:`, error);
+      }
+
+      if (name !== "find") {
+        editor.focus();
+      }
+    });
+  }
+}
+  
   
 // The actual editor
-
-import {
-  EditorView,
-  basicSetup
-} from "https://esm.sh/codemirror@6.0.2";
-
-import {
-  EditorState
-} from "https://esm.sh/@codemirror/state@6.7.1";
-
-import {
-  oneDark
-} from "https://esm.sh/@codemirror/theme-one-dark@6.1.3";
-    
+   
 export const initCodeMirror = function (parent, startValue, onChange) {
   const editor = new EditorView({
     state: EditorState.create({
       doc: startValue,
       extensions: [
-        basicSetup,
+        getExtensions(),
         oneDark,
         glsl,
         glslTheme,
@@ -1475,6 +1672,8 @@ export const initCodeMirror = function (parent, startValue, onChange) {
       editor.update(trs);
     }
   });
+
+  connectEditorToolbar(editor);
 
   return {
     view: editor,

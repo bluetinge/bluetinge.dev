@@ -123,14 +123,14 @@
       margin-left: auto;
     }
 
-    #swap-button {
+    #tab-view {
       display:none;
     }
     @media (pointer: coarse) {
       .editor-toolbar {
         display: flex;
       }
-      #swap-button {
+      #tab-view {
         display: block;
       }
     }
@@ -557,7 +557,7 @@
       <div id="top-row" class="tab-row">
         <button id="tab-vertex" class="shader-tab">Vertex Shader</button>
         <button id="tab-fragment" class="shader-tab">Fragment Shader</button>
-        <button id="swap-button">Display</button>
+        <button id="tab-view" class="shader-tab" style="flex: 0.5;">View</button>
       </div>
       <!--<textarea id="shader" style="flex: 1; min-height: 0;"></textarea>-->
       <div id="editor-toolbar" class="editor-toolbar code-panel">
@@ -572,17 +572,19 @@
         <button class="align-right" type="button" data-command="find" aria-label="Find" style="margin-right:4px;"><span class="glyphicon glyphicon-search"></span></button>
       </div>
       <div id="editor" class="code-panel" style="flex: 1; min-height: 0;"></div>
-      <button id="compile" class="code-panel">Compile Shader</button>
+      <button id="compile">Compile Shader</button>
       <div id="log" class="code-panel"></div>
       <div id="uniform-divider" class="divider row-divider"></div>
+      <div id="uniform-tab-row" class="tab-row">
+        <button id="tab-attributes" class="shader-tab">Attributes</button>
+        <button id="tab-uniforms" class="shader-tab">Uniforms</button>
+      </div>
       <div id="uniform-panel">
-        <div style="display: flex; flex-direction: row; border-bottom: 1px solid #333;">
-          <button id="tab-attributes" class="shader-tab">Attributes</button>
-          <button id="tab-uniforms" class="shader-tab">Uniforms</button>
-        </div>
+        <div>
         <!-- <strong>Uniforms</strong> -->
         <div id="all-attributes" class="variables-container"></div>
         <div id="all-uniforms" class="variables-container"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -737,10 +739,14 @@ twgl.resizeCanvasToDisplaySize(gl.canvas);
 let rendering = false; // if true: currently requesting next animation frame. if false: not doing that due to an error (or it hasnt started yet or something)
 
 // load width
+// note: needs to be rewritten so that tab system makes sesnse and isnt weird
+// iys avtually really easy dont be scared
 const is_mobile = matchMedia('(pointer:coarse)').matches;
 let isCanvasVisible = localStorage.getItem("is_canvas_visible");
 if (isCanvasVisible === null) isCanvasVisible = true;
+else if (isCanvasVisible == "false") isCanvasVisible = false;
 if(!is_mobile) {
+  isCanvasVisible = true;
   const savedWidth = localStorage.getItem("shader_ui_width");
   if (savedWidth) {
     document.getElementById("ui").style.flexBasis = `${savedWidth}px`;
@@ -760,25 +766,23 @@ else {
   const cc = document.getElementById("canvas-container");
   document.getElementById("top-row").after(cc);
   canvas.style.minHeight = window.innerWidth + "px";
-  setCanvasVisibility(false);
-  document.getElementById("swap-button").addEventListener("click", ()=>(setCanvasVisibility(true)));
+  document.getElementById("tab-view").addEventListener("click", ()=>(setCanvasVisibility(true)));
+  setCanvasVisibility(isCanvasVisible);
   document.getElementById("tab-vertex").addEventListener("click", ()=>(setCanvasVisibility(false)));
   document.getElementById("tab-fragment").addEventListener("click", ()=>(setCanvasVisibility(false)));
 }
 function setCanvasVisibility(visible) {
-  if (visible) {
-    document.querySelectorAll(".code-panel").forEach((e)=>{
-      e.classList.add("hide");
-    });
-    document.getElementById("canvas-container").classList.remove("hide");
-  }
-  else {
-    document.querySelectorAll(".code-panel").forEach((e)=>{
-      e.classList.remove("hide");
-    });
-    document.getElementById("canvas-container").classList.add("hide");
-  }
+  console.log(visible,"KLKL");
+  document.querySelectorAll(".code-panel").forEach((e)=>{
+    e.classList.toggle("hide",visible);
+    console.log(e.classList,visible);
+  });
+  document.getElementById("canvas-container").classList.toggle("hide",!visible);
   isCanvasVisible = visible;
+  localStorage.setItem("is_canvas_visible",visible);
+  document.getElementById("tab-view").classList.toggle("active",true);
+  document.getElementById("tab-vertex").classList.toggle("active",false);
+  document.getElementById("tab-fragment").classList.toggle("active",false);
   localStorage.setItem("is_canvas_visible",visible);
 }
 
@@ -1253,19 +1257,19 @@ let activeShaderType = localStorage.getItem("active_shader_type") || "fragment";
 const editor = initCodeMirror(
   document.getElementById("editor"),
   (activeShaderType === "vertex" ? vertShaderCode : fragShaderCode),
-  (value) => {}//console.log(value)
+  (value) => {document.getElementById("compile").classList.remove("code-panel");}//console.log(value)
 );
 //document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
 
 function updateTabUI(newValue) {
   // save existing code
   if(activeShaderType === "vertex") vertShaderCode = editor.getCode();//document.getElementById("shader").value;
-  else fragShaderCode = 
-  editor.getCode(); // document.getElementById("shader").value;
+  else fragShaderCode = editor.getCode(); // document.getElementById("shader").value;
   // toggle tab
   activeShaderType = newValue;
   document.getElementById("tab-vertex").classList.toggle("active", activeShaderType === "vertex");
   document.getElementById("tab-fragment").classList.toggle("active", activeShaderType === "fragment");
+  document.getElementById("tab-view").classList.toggle("active", false);
   editor.setCode(activeShaderType === "vertex" ? vertShaderCode : fragShaderCode);
   //document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
   localStorage.setItem("active_shader_type",activeShaderType)
@@ -1279,7 +1283,7 @@ document.getElementById("tab-fragment").addEventListener("click", () => {
   updateTabUI("fragment");
 });
 
-updateTabUI(activeShaderType); // initial update
+if(!is_mobile || !isCanvasVisible) updateTabUI(activeShaderType); // initial update
 
 let currentProgramInfo = twgl.createProgramInfo(gl, [defaultVert, defaultFrag]);
 let currentBuffers = {};
@@ -1325,13 +1329,14 @@ window.addEventListener("pointermove", (e) => {
     localStorage.setItem("shader_ui_width", newWidth); // save
   }
   else if (resizingUniforms){
-    const min = window.innerHeight * 0.1; // 75; //ish
-    const max = window.innerHeight * 0.8; //900; //ish
+    const min = 0; window.innerHeight * 0.05; // 75; //ish
+    const max = window.innerHeight * 0.9; //900; //ish
   const uiTop = document.getElementById("ui").getBoundingClientRect().top;
   const totalHeight = document.getElementById("ui").clientHeight;
+  const tabHeight =  document.getElementById("uniform-tab-row").clientHeight;
 
   const fromTop = e.clientY - uiTop;
-  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 5)); //5: slight buffer to feel like center
+  const newHeight = Math.min(max, Math.max(min, totalHeight - fromTop - 5 - tabHeight)); //5: slight buffer to feel like center
     document.getElementById("uniform-panel").style.flexBasis = `${newHeight}px`;
     localStorage.setItem("uniforms_height", newHeight); // save
   }
@@ -1542,6 +1547,10 @@ function logError(msg, line) {
   if (logMsg.length == 0) logMsg = msg;
   document.getElementById("log").textContent = logMsg;
   document.getElementById("log").style.color = "red";
+  document.getElementById("log").classList.toggle("code-panel",false);
+  document.getElementById("log").classList.toggle("hide",false);
+  document.getElementById("compile").classList.toggle("code-panel",false);
+  document.getElementById("compile").classList.toggle("hide",false);
 }
 
 const GLSL_TO_WEBGL_EXT = {
@@ -1607,10 +1616,23 @@ function createProgramFromSources(vertSrc, fragSrc) {
       rendering = true;
       requestAnimationFrame(render);
     }
+    
+    // hide buttons on canvas view
+    document.getElementById("log").classList.toggle("code-panel",true);
+    //document.getElementById("compile").classList.toggle("code-panel",true);
+    if(isCanvasVisible && is_mobile) { 
+      document.getElementById("log").classList.toggle("hide",true);
+      //document.getElementById("compile").classList.toggle("hide",true);
+    }
+    
   } catch (err) {
     console.error(err);
     document.getElementById("log").textContent = err.message;
     document.getElementById("log").style.color = "red";
+    document.getElementById("log").classList.toggle("code-panel",false);
+    document.getElementById("log").classList.toggle("hide",false);
+    document.getElementById("compile").classList.toggle("code-panel",false);
+    document.getElementById("compile").classList.toggle("hide",false);
   }
 }
 

@@ -1045,7 +1045,6 @@ function tokenBlockComment(stream, state) {
 
     previous = current;
   }
-
   return "blockComment";
 }
 
@@ -1089,111 +1088,118 @@ function copyState(state) {
   };
 }
 
-export const glslLanguage = StreamLanguage.define({
-  name: "glsl-es-300",
+export function createGLSLLanguage({
+    shaderType = null
+  } = {}) {
+  const language = StreamLanguage.define({
+    name: `glsl-es-300${shaderType? "-"+shaderType:""}`,
 
-  tokenTable: {
-    uniformName: uniformNameTag,
-    attributeName: attributeNameTag,
-    varyingName: varyingNameTag,
-    outputName: outputNameTag,
-    constantName: constantNameTag,
-    functionName: functionNameTag,
-    builtinName: builtinNameTag,
-    paramName: paramNameTag,
-    localName: localNameTag,
-    structName: structNameTag,
-    unknownMeta: unknownMetaTag,
-    unknownName: unknownNameTag
-  },
-
-  startState() {
-    return {
-      inBlockComment: false,
-      inString: false,
-      inPreprocessor: false,
-      expectingPreprocessorDirective: false,
-      depth: 0,
-      paren: 0,
-      sawDot: false,
-      characters: 0,
-
-      declarationKind: null,
-      declarationSawType: false,
-      
-      uniforms: new Set(),
-      attributes: new Set(),
-      varyings: new Set(),
-      outputs: new Set(),
-      constants: new Set(),
-      functions: new Set(),
-      macros: new Set(),
-      params: new Set(),
-      locals: [new Set()],
-      structs: new Set(),
-      properties: new Set()
-    };
-  },
-
-  copyState: copyState,
-
-  token(stream, state) {
-    if (stream.sol()) {
-      state.inPreprocessor = false;
-      state.expectingPreprocessorDirective = false;
-      
-      if(CompletionState.position !== null 
-      && CompletionState.state === null
-      && state.characters + stream.string.length + 1 >= CompletionState.position ) {
-        CompletionState.state = copyState(state);
-      }
-      state.characters += stream.string.length + 1;
-    }
-
-    if (state.inBlockComment) {
-      return tokenBlockComment(stream, state);
-    }
-
-    if (state.inString) {
-      return tokenString(stream, state);
-    }
-
-    return tokenBase(stream, state);
-  },
-
-  indent(state, textAfter, context) {
-    const closesBlock = /^\s*}/.test(textAfter);
-
-    return (
-      Math.max(
-        0,
-        state.depth - (closesBlock ? 1 : 0)
-      ) * context.unit
-    );
-  },
-
-  languageData: {
-    commentTokens: {
-      line: "//",
-      block: {
-        open: "/*",
-        close: "*/"
-      }
+    tokenTable: {
+      uniformName: uniformNameTag,
+      attributeName: attributeNameTag,
+      varyingName: varyingNameTag,
+      outputName: outputNameTag,
+      constantName: constantNameTag,
+      functionName: functionNameTag,
+      builtinName: builtinNameTag,
+      paramName: paramNameTag,
+      localName: localNameTag,
+      structName: structNameTag,
+      unknownMeta: unknownMetaTag,
+      unknownName: unknownNameTag
     },
 
-    closeBrackets: {
-      brackets: [
-        "(",
-        "[",
-        "{",
-        "'",
-        '"'
-      ]
+    startState() {
+      return {
+        shaderType: shaderType,
+        
+        inBlockComment: false,
+        inString: false,
+        inPreprocessor: false,
+        expectingPreprocessorDirective: false,
+        depth: 0,
+        paren: 0,
+        sawDot: false,
+        characters: 0,
+
+        declarationKind: null,
+        declarationSawType: false,
+        
+        uniforms: new Set(),
+        attributes: new Set(),
+        varyings: new Set(),
+        outputs: new Set(),
+        constants: new Set(),
+        functions: new Set(),
+        macros: new Set(),
+        params: new Set(),
+        locals: [new Set()],
+        structs: new Set(),
+        properties: new Set()
+      };
     },
 
-    indentOnInput: /^\s*}$/
-  }
-});
+    copyState: copyState,
+
+    token(stream, state) {
+      if (stream.sol()) {
+        state.inPreprocessor = false;
+        state.expectingPreprocessorDirective = false;
+        
+        if(CompletionState.position !== null 
+        && CompletionState.state === null
+        && state.characters + stream.string.length + 1 >= CompletionState.position ) {
+          CompletionState.state = copyState(state);
+        }
+        state.characters += stream.string.length + 1;
+      }
+
+      if (state.inBlockComment) {
+        return tokenBlockComment(stream, state);
+      }
+
+      if (state.inString) {
+        return tokenString(stream, state);
+      }
+
+      return tokenBase(stream, state);
+    },
+
+    indent(state, textAfter, context) {
+      const closesBlock = /^\s*}/.test(textAfter);
+
+      return (
+        Math.max(
+          0,
+          state.depth - (closesBlock ? 1 : 0)
+        ) * context.unit
+      );
+    },
+
+    languageData: {
+      commentTokens: {
+        line: "//",
+        block: {
+          open: "/*",
+          close: "*/"
+        }
+      },
+
+      closeBrackets: {
+        brackets: [
+          "(",
+          "[",
+          "{",
+          "'",
+          '"'
+        ]
+      },
+
+      indentOnInput: /^\s*}$/
+    }
+  });
+  return language;
+}
 
 /** Fold service **/
 
@@ -1413,20 +1419,23 @@ export const glslFolding = foldService.of(
 
 /** Bundle **/
 
-export function glslES300() {
+export function glslES300(options) {
+  const lang = createGLSLLanguage(options);
   return new LanguageSupport(
-    glslLanguage,
+    lang,
     [
       indentUnit.of("  "),
       glslFolding,
-      glslLanguage.data.of({
-        autocomplete: glslCompletionSource
+      lang.data.of({
+        autocomplete: glslCompletionSource,
+        shaderType: options.shaderType
       })
     ]
   );
 }
 
-export const glsl = glslES300();
+export const glslES300Vertex = glslES300({shaderType:"VERTEX_SHADER"});
+export const glslES300Fragment = glslES300({shaderType:"FRAGMENT_SHADER"});
 
 /** Style **/
 
@@ -1673,27 +1682,45 @@ function connectEditorToolbar(editor) {
 }
   
   
-// The actual editor
-   
-export const initCodeMirror = function (parent, startValue, onChange) {
-  const editor = new EditorView({
+// Cached states
+  
+function createEditorData(startValue, shaderType, onChange) {
+  const lang = (shaderType == "VERTEX_SHADER")? glslES300Vertex : glslES300Fragment;
+  const data = {
     state: EditorState.create({
-      doc: startValue,
-      extensions: [
-        getExtensions(),
-        oneDark,
-        glsl,
-        glslTheme,
-        EditorView.lineWrapping,
+          doc: startValue,
+          extensions: [
+            getExtensions(),
+            oneDark,
+            lang,
+            glslTheme,
+            EditorView.lineWrapping,
 
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            onChange?.(update.state.doc.toString());
-          }
-        })
-      ]
-    }),
-
+            EditorView.updateListener.of((update) => {
+              if (update.docChanged) {
+                onChange?.(update.state.doc.toString());
+              }
+            })
+          ]
+        }),
+    scrollTop: 0
+  }
+  return data;
+}
+  
+// The actual editor
+// code: {"VERTEX_SHADER":{"contents": ..., "type": ..., }}
+export const initCodeMirror = function (parent, files, init_filename, onChange) {
+  
+  const editor_states = {}
+  let selected_filename = init_filename;
+  
+  for (let filename in files) {
+    editor_states[filename] = createEditorData(files[filename].code, files[filename].type, onChange);
+  }
+  
+  const editor = new EditorView({
+    state: editor_states[init_filename].state,
     parent: parent,
     dispatchTransactions: (trs) => {
       CompletionState.position = null;
@@ -1725,6 +1752,17 @@ export const initCodeMirror = function (parent, startValue, onChange) {
           insert: code
         }
       });
+    },
+    
+    setFile(filename) {
+      // save old
+      editor_states[selected_filename].state = editor.state;
+      editor_states[selected_filename].scrollTop = parent.scrollTop;
+      
+      // set new
+      selected_filename = filename;
+      editor.setState(editor_states[selected_filename].state);
+      parent.scrollTop = editor_states[selected_filename].scrollTop;
     },
 
     focus() {

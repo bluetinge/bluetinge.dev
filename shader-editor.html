@@ -1254,12 +1254,26 @@ let fragShaderCode = localStorage.getItem("frag_shader_code") || defaultFrag;
 let vertShaderCode = localStorage.getItem("vert_shader_code") || defaultVert;
 let activeShaderType = localStorage.getItem("active_shader_type") || "fragment"; // "vertex" or "fragment"
 
+const files = {
+  "vertex": {"contents": vertShaderCode, "type": "VERTEX_SHADER"},
+  "fragment": {"contents": vertShaderCode, "type": "FRAGMENT_SHADER"},
+}
+// The actual editor
+// code: {"VERTEX_SHADER":{"contents": ..., "type": ..., }}
 const editor = initCodeMirror(
   document.getElementById("editor"),
-  (activeShaderType === "vertex" ? vertShaderCode : fragShaderCode),
+  files,
+  activeShaderType,
   (value) => {document.getElementById("compile").classList.remove("code-panel");}//console.log(value)
 );
 //document.getElementById("shader").value = activeShaderType === "vertex" ? vertShaderCode : fragShaderCode;
+
+Handoff:
+I deliberately broke it. I'm not allowed to do more work on it until I finish the things I ACTUALLY need to do, urgently.
+
+With regards to current feature implementation:
+- setCode needs to be changed t oaccount for active shader type better
+- Overall: swap codemirror editor states with different tabs, tie tab UI to a virtual filesystem thing, etc. 
 
 function updateTabUI(newValue) {
   // save existing code

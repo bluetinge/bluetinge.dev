@@ -2254,7 +2254,7 @@ function render(time) {
     rendering = false;
     document.getElementById("log").textContent = err.message;
     document.getElementById("log").style.color = "red";
-    
+    document.getElementById("log").classList.toggle("hide",false);
   }
 }
 

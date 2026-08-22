@@ -1,4 +1,4 @@
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="https://purl.org/rssr/terms" version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:rssr="https://purl.org/rssr/terms" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
   <channel>
     <title>
       bluetinge.dev
@@ -11,7 +11,7 @@
       BlueTinge's RSS feed
     </description>
     <lastBuildDate>
-      Fri, 27 Sep 2024 19:32:00 GMT
+      Sat, 22 Aug 2026 21:16:54 GMT
     </lastBuildDate>
     <rssr:displayName xmlns:rssr="https://purl.org/rssr/terms/">
       BlueTinge
@@ -19,7 +19,63 @@
     <rssr:displayIcon xmlns:rssr="https://purl.org/rssr/terms/">
       https://bluetinge.dev/favicon.png
     </rssr:displayIcon>
+    <item>
+      <author>
+        admin@bluetinge.dev (Blue Tinge)
+      </author>
+      <thumbnail>
+        undefined
+      </thumbnail>
+      <title>
+        First Post
+      </title>
+      <guid isPermaLink="false">
+        ea3fa2c2-3938-4da1-8a4d-9564aa5f9a85
+      </guid>
+      <link>
+        https://bluetinge.dev/blog#firstpost
+      </link>
+      <description>
+        <![CDATA[
+<div class="rssr-item">
+  <div class="rssr-section rssr-reblog-header">
+    <p><small class="rssr-font rssr-reblog-header-font" style="vertical-align:middle;padding:0.36em;">
+      <a href="https://bluetinge.dev/blog" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <img style="max-height:24px;max-width:24px;height:22px;width:22px;vertical-align:middle;" src="https://bluetinge.dev/favicon.png" alt=""> 
+        <b>BlueTinge</b>
+      </a> <i> <a href="https://bluetinge.dev/blog#firstpost" target="_blank" rel="noopener noreferrer">posted</a> </i> 
+      <i><time class="rssr-datetime" datetime="2026-08-22T21:16:54.905Z">on 8/22/2026:</time></i>
+    </small></p>
+  </div>
+  <hr class="rssr-hr rssr-reblog-header-divider">
+<!-- End RSS-Reblog Header -->
 
+<p>Hmm, should I revive this project? I think I know went wrong with it originally -- the barrier of entry was just a bit too high, and the scope of work I had to do was <em>also</em> too high. But I think that there were some cool things about it too.</p>
+<p>Things I'm thinking about doing:</p>
+<ul>
+<li>Making a custom Cohost-like feed reader</li>
+<li>Integrating with GH / GL pages so that it's easier to start a blog</li>
+<li>Notes/notifications</li>
+</ul>
+
+  <hr class="rssr-hr rssr-footer-divider">
+  <div class="rssr-section rssr-footer">
+    <p><small class="rssr-font rssr-footer-font" style="vertical-align:middle;color:blue;"><a href="https://purl.org/rssr/reblog?&feed=https%3A%2F%2Fbluetinge.dev%2Frss.xml&guid=ea3fa2c2-3938-4da1-8a4d-9564aa5f9a85" target="_blank" rel="noopener noreferrer" class="rssr-reblog-button" style="padding:0.36em;"><img style="height:1em;vertical-align:middle;" src="https://purl.org/rssr/rss-icon" alt=""> <b>Reblog via RSS</b></a></small></p>
+    <script async src="https://purl.org/rssr/script"></script>
+  </div>
+</div>
+]]>
+      </description>
+      <category>
+        reblog
+      </category>
+      <category>
+        resshare
+      </category>
+      <pubDate>
+        Sat, 22 Aug 2026 21:16:54 GMT
+      </pubDate>
+    </item>
     <item>
       <author>
         admin@bluetinge.dev (Blue Tinge)
@@ -97,7 +153,6 @@
         Tue, 01 Oct 2024 05:06:11 GMT
       </pubDate>
     </item>
-
     <item>
       <author>
         admin@bluetinge.dev (Blue Tinge)
